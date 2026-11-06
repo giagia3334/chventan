@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ჩვენთან</title>
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="img/favicon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="ჩვენთან">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0D1B42">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@400;500;600;700;800;900&family=Noto+Serif+Georgian:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0D1B42;--navy2:#162a5c;--blue:#2163E8;--sea:#1fa3c9;--seaL:#e6f5fa;
+  --red:#D7263D;--green:#16a34a;--greenL:#e7f7ec;--amber:#f59e0b;--amberL:#fff4dd;
+  --bg:#f4f6fb;--card:#fff;--line:#e3e8f2;--mute:#6b7690;--ink:#0D1B42;
+  --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#dfe5f0}
+body{font-family:"Noto Sans Georgian",system-ui,sans-serif;font-variant-numeric:lining-nums;color:var(--ink);font-size:15px;line-height:1.45}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+.serif{font-family:"Noto Sans Georgian",sans-serif}
+#app{position:relative;max-width:460px;height:100%;margin:0 auto;background:var(--bg);overflow:hidden;box-shadow:0 0 40px rgba(13,27,66,.15)}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden}
+.screen.on{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(90px + var(--safe-b))}
+.demo-tag{display:none;position:absolute;top:calc(8px + var(--safe-t));right:10px;z-index:60;background:rgba(13,27,66,.85);color:#fff;font-size:10px;padding:3px 8px;border-radius:20px;letter-spacing:.3px;pointer-events:none}
+
+/* header */
+.hdr{padding:calc(14px + var(--safe-t)) 18px 14px;background:var(--navy);color:#fff;position:relative}
+.hdr h1{font-family:"Noto Sans Georgian",sans-serif;font-size:22px;font-weight:800;letter-spacing:.5px}
+.hdr p{color:#b7c3e0;font-size:13px;margin-top:2px}
+.flag{height:13px;background:#fff linear-gradient(90deg,var(--navy) 2px,transparent 2px) calc(50% - 16px) 0/32px 100%;border-bottom:2px solid var(--navy);position:relative}
+.flag::after{content:"";position:absolute;top:0;bottom:0;left:calc(50% - 14px);width:30px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20'%3E%3Crect width='30' height='20' fill='%23fff'/%3E%3Cpath d='M13 0h4v20h-4zM0 8h30v4H0z' fill='%23D7263D'/%3E%3Cpath d='M6 3h1.4v4H6zM4.7 4.3h4v1.4h-4zM22.6 3H24v4h-1.4zM21.3 4.3h4v1.4h-4zM6 13h1.4v4H6zM4.7 14.3h4v1.4h-4zM22.6 13H24v4h-1.4zM21.3 14.3h4v1.4h-4z' fill='%23D7263D'/%3E%3C/svg%3E") center/100% 100%}
+.logo{display:block}.logo .s{fill:none;stroke:currentColor;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}.logo .b{fill:var(--lf,#fff);stroke:currentColor;stroke-width:5;stroke-linejoin:round}
+.brick-ic{display:inline-block;width:16px;height:10px;border-radius:2px;background:var(--red);vertical-align:-1px;margin-right:4px}
+.cityWall{display:flex;align-items:center;gap:10px;background:var(--navy);color:#fff;border-radius:16px;padding:10px 12px;margin-bottom:10px}
+.cityWall b{font-size:18px;font-weight:900}.cityWall span{font-size:12px;color:#b7c3e0;display:block}
+.mywall{margin:0 14px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px}
+.wrow{display:flex;gap:4px;margin-bottom:4px}.wrow i{flex:1;height:22px;border-radius:4px;border:2px solid var(--navy);background:#fff;position:relative}
+.wrow i.h{flex:.5}.wrow i.fix{background:var(--navy)}.wrow i.open{background:#fff4dd;border-color:var(--amber)}.wrow i.ghost{border:2px dashed #cfd6e4}
+.wrow i.flg{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20'%3E%3Crect width='30' height='20' fill='%23fff'/%3E%3Cpath d='M13 0h4v20h-4zM0 8h30v4H0z' fill='%23D7263D'/%3E%3Cpath d='M6 3h1.4v4H6zM4.7 4.3h4v1.4h-4zM22.6 3H24v4h-1.4zM21.3 4.3h4v1.4h-4zM6 13h1.4v4H6zM4.7 14.3h4v1.4h-4zM22.6 13H24v4h-1.4zM21.3 14.3h4v1.4h-4z' fill='%23D7263D'/%3E%3C/svg%3E") center/100% 100%}
+.wlegend{display:flex;gap:12px;font-size:11.5px;color:var(--mute);margin-top:8px;flex-wrap:wrap}.wlegend em{display:inline-block;width:14px;height:9px;border-radius:2px;border:2px solid var(--navy);margin-right:4px;vertical-align:-1px}
+.dropwall{width:170px;margin-bottom:16px}.dropwall .nb{animation:drop .9s cubic-bezier(.3,1.4,.5,1) .2s both}
+@keyframes drop{from{transform:translateY(-70px);opacity:0}}
+.wordmark{font-weight:900;font-size:26px;letter-spacing:-.5px}
+.wordmark small{display:block;font-size:9px;letter-spacing:5px;font-weight:700;opacity:.7;margin-top:-2px}
+
+/* tab bar */
+.tabs{position:absolute;left:0;right:0;bottom:0;z-index:40;background:#fff;border-top:1px solid var(--line);display:flex;align-items:flex-end;padding:6px 6px calc(6px + var(--safe-b))}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--mute);padding:4px 0;font-weight:600}
+.tab svg{width:23px;height:23px}
+.tab.on{color:var(--navy)}
+.tab.on svg{stroke:var(--blue)}
+.fab{width:58px;height:58px;margin:-26px 4px 0;border-radius:50%;background:var(--red);color:#fff;display:grid;place-items:center;box-shadow:0 8px 20px rgba(215,38,61,.4);flex:0 0 58px}
+.fab svg{width:28px;height:28px}
+
+/* map */
+.mapwrap{position:absolute;inset:0;background:var(--seaL)}
+.mapwrap svg.map{width:100%;height:100%;display:block}
+.pin{position:absolute;transform:translate(-50%,-100%);z-index:5}
+.pin b{display:block;width:30px;height:30px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.25)}
+.pin i{position:absolute;left:50%;top:13px;transform:translate(-50%,-50%);color:#fff;font-style:normal;font-size:13px;font-weight:800}
+.st-new b{background:var(--red)}.st-work b{background:var(--amber)}.st-done b{background:var(--green)}
+.maptop{position:absolute;top:calc(12px + var(--safe-t));left:12px;right:12px;z-index:20;display:flex;gap:8px;align-items:center}
+.brandchip{background:var(--navy);color:#fff;border-radius:14px;padding:6px 12px 7px;box-shadow:0 6px 16px rgba(13,27,66,.25)}
+.brandchip .wordmark{font-size:19px}.brandchip{display:flex;align-items:center;gap:8px}.brandchip .logo{width:40px;color:#fff;--lf:var(--navy)}
+.city{background:#fff;border-radius:14px;padding:9px 12px;font-size:13px;font-weight:700;box-shadow:0 4px 12px rgba(13,27,66,.12);display:flex;align-items:center;gap:6px}
+.legend{position:absolute;top:calc(68px + var(--safe-t));left:12px;z-index:20;display:flex;gap:6px}
+.legend span{background:#fff;border-radius:20px;padding:4px 9px;font-size:11px;font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.08);display:flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+
+.sheet{position:absolute;left:0;right:0;bottom:0;z-index:30;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -10px 30px rgba(13,27,66,.15);padding:8px 16px calc(84px + var(--safe-b));transition:transform .3s;max-height:72%;overflow-y:auto}
+.sheet.min{transform:translateY(calc(100% - 205px - var(--safe-b)))}
+.grab{width:40px;height:5px;border-radius:5px;background:#d5dbe7;margin:2px auto 10px}
+.stats{display:flex;gap:8px;margin-bottom:12px}
+.stat{flex:1;border-radius:14px;padding:10px;background:var(--bg)}
+.stat b{display:block;font-size:20px;font-weight:800}
+.stat span{font-size:11px;color:var(--mute);font-weight:600}
+.stat.g b{color:var(--green)}.stat.a b{color:var(--amber)}.stat.r b{color:var(--red)}
+.sec{font-weight:800;font-size:15px;margin:14px 0 8px;display:flex;justify-content:space-between;align-items:center}
+.sec a{font-size:12px;color:var(--blue);font-weight:700}
+
+.item{display:flex;gap:11px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.thumb{width:54px;height:54px;border-radius:12px;flex:0 0 54px;overflow:hidden;background:var(--bg);position:relative}
+.thumb svg,.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.item .t{font-weight:700;font-size:14px}
+.item .s{font-size:12px;color:var(--mute)}
+.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.b-new{background:#fde8eb;color:var(--red)}.b-work{background:var(--amberL);color:#b45309}.b-done{background:var(--greenL);color:var(--green)}.b-asg{background:#e7efff;color:var(--blue)}
+.check{position:absolute;right:3px;bottom:3px;width:18px;height:18px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:900;border:2px solid #fff}
+
+/* report flow */
+.flowhdr{padding:calc(12px + var(--safe-t)) 14px 12px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.back{width:36px;height:36px;border-radius:12px;background:var(--bg);display:grid;place-items:center}
+.steps{display:flex;gap:5px;flex:1}
+.steps i{flex:1;height:5px;border-radius:5px;background:var(--line)}
+.steps i.on{background:var(--blue)}
+.flowbody{flex:1;overflow-y:auto;padding:18px 16px 120px}
+.flowbody h2{font-family:"Noto Sans Georgian",sans-serif;font-size:21px;font-weight:800;margin-bottom:4px}
+.flowbody .sub{color:var(--mute);font-size:13.5px;margin-bottom:16px}
+.shot{border:2px dashed #c3cde0;border-radius:20px;height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#fff;position:relative;overflow:hidden;text-align:center}
+.shot img,.shot video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.shot .cam{width:70px;height:70px;border-radius:50%;background:var(--navy);display:grid;place-items:center;color:#fff}
+.shot .redo{position:absolute;right:10px;bottom:10px;background:rgba(13,27,66,.8);color:#fff;border-radius:20px;padding:6px 12px;font-size:12px;font-weight:700;z-index:2}
+.or{display:flex;gap:8px;margin-top:10px}
+.or button{flex:1;background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px;font-weight:700;font-size:13px}
+.minimap{height:330px;border-radius:20px;overflow:hidden;position:relative;background:var(--seaL);border:1px solid var(--line)}
+.minimap svg{width:100%;height:100%;display:block}
+.centerpin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);pointer-events:none;z-index:3;transition:left .2s,top .2s}
+.centerpin b{display:block;width:38px;height:38px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--red);border:4px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.addr{margin-top:12px;background:#fff;border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;border:1px solid var(--line)}
+.addr b{display:block;font-size:14px}.addr span{font-size:12px;color:var(--mute)}
+.hint{font-size:12px;color:var(--mute);text-align:center;margin-top:8px}
+textarea{width:100%;min-height:120px;border:1px solid var(--line);border-radius:16px;padding:14px;background:#fff;resize:none;font-size:15px;outline:none}
+textarea:focus{border-color:var(--blue)}
+.stars{display:flex;gap:6px;margin:4px 0 14px}
+.stars button{font-size:13px;font-weight:700;border-radius:20px;padding:7px 12px;background:#fff;border:1px solid var(--line)}
+.stars button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.ai{margin-top:14px;border-radius:18px;padding:14px;background:linear-gradient(135deg,#0D1B42,#1d3a85);color:#fff}
+.ai .lbl{font-size:11px;letter-spacing:1px;color:#9fb2e3;font-weight:700;display:flex;align-items:center;gap:6px}
+.ai .cat{font-size:18px;font-weight:800;margin-top:4px}
+.ai .dep{font-size:13px;color:#c9d5f3}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chips button{font-size:12px;font-weight:700;padding:6px 10px;border-radius:20px;background:rgba(255,255,255,.12);color:#fff}
+.chips button.on{background:#fff;color:var(--navy)}
+.review{background:#fff;border-radius:20px;overflow:hidden;border:1px solid var(--line)}
+.review .ph{height:190px;background:var(--bg);position:relative}
+.review .ph img,.review .ph svg{width:100%;height:100%;object-fit:cover;display:block}
+.review .rows{padding:6px 14px}
+.review .row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.review .row:last-child{border:0}
+.review .row span{color:var(--mute)}
+.review .row b{text-align:right}
+.cta{position:absolute;left:0;right:0;bottom:0;padding:12px 16px calc(14px + var(--safe-b));background:linear-gradient(transparent,var(--bg) 30%);z-index:10}
+.btn{width:100%;background:var(--navy);color:#fff;border-radius:16px;padding:15px;font-weight:800;font-size:15.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:disabled{opacity:.35}
+.btn.red{background:var(--red)}.btn.green{background:var(--green)}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+
+/* success */
+.done{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px 24px;background:var(--navy);color:#fff}
+.done .ring{width:110px;height:110px;border-radius:50%;background:rgba(22,163,74,.18);display:grid;place-items:center;margin-bottom:18px;animation:pop .5s}
+.done .ring div{width:78px;height:78px;border-radius:50%;background:var(--green);display:grid;place-items:center}
+@keyframes pop{from{transform:scale(.4);opacity:0}}
+.done h2{font-family:"Noto Sans Georgian",sans-serif;font-size:24px;font-weight:800}
+.done p{color:#b7c3e0;margin-top:6px}
+.qbox{display:flex;gap:10px;margin:22px 0;width:100%}
+.qbox div{flex:1;background:rgba(255,255,255,.08);border-radius:16px;padding:12px}
+.qbox b{display:block;font-size:24px;font-weight:800}
+.qbox span{font-size:11.5px;color:#b7c3e0}
+.xp{background:rgba(245,158,11,.15);color:#fbbf24;border-radius:20px;padding:6px 14px;font-weight:800;font-size:13px;margin-bottom:22px}
+
+/* my reports */
+.card{background:#fff;border-radius:20px;margin:12px 14px;overflow:hidden;border:1px solid var(--line)}
+.card .top{display:flex;gap:12px;padding:14px;align-items:center}
+.card .top .thumb{width:64px;height:64px;flex-basis:64px}
+.qline{display:flex;gap:8px;padding:0 14px 12px}
+.qline div{flex:1;background:var(--bg);border-radius:12px;padding:8px 10px}
+.qline b{font-size:16px;display:block}.qline span{font-size:11px;color:var(--mute);font-weight:600}
+.tl{padding:4px 14px 14px 14px}
+.tl .st{display:flex;gap:12px;position:relative;padding-bottom:12px}
+.tl .st:last-child{padding-bottom:0}
+.tl .st::before{content:"";position:absolute;left:10px;top:20px;bottom:0;width:2px;background:var(--line)}
+.tl .st:last-child::before{display:none}
+.tl .st.ok::before{background:var(--green)}
+.tl .c{width:22px;height:15px;border-radius:4px;margin-top:2px;border:2px solid var(--line);background:#fff;flex:0 0 20px;display:grid;place-items:center;font-size:11px;color:#fff;font-weight:900;z-index:1}
+.tl .ok .c{background:var(--green);border-color:var(--green)}
+.tl .cur .c{border-color:var(--amber);background:var(--amber);box-shadow:0 0 0 4px var(--amberL)}
+.tl .ok:last-child .c{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 20'%3E%3Crect width='30' height='20' fill='%23fff'/%3E%3Cpath d='M13 0h4v20h-4zM0 8h30v4H0z' fill='%23D7263D'/%3E%3Cpath d='M6 3h1.4v4H6zM4.7 4.3h4v1.4h-4zM22.6 3H24v4h-1.4zM21.3 4.3h4v1.4h-4zM6 13h1.4v4H6zM4.7 14.3h4v1.4h-4zM22.6 13H24v4h-1.4zM21.3 14.3h4v1.4h-4z' fill='%23D7263D'/%3E%3C/svg%3E") center/100% 100%;border-color:var(--navy)}
+.tl .st b{font-size:13.5px;display:block}.tl .st span{font-size:12px;color:var(--mute)}
+.tl .st:not(.ok):not(.cur) b{color:#9aa4ba}
+.expand{width:100%;padding:10px;font-size:12.5px;font-weight:700;color:var(--blue);border-top:1px solid var(--line)}
+.fixnote{margin:0 14px 14px;background:var(--greenL);border-radius:14px;padding:10px 12px;font-size:13px}
+.fixnote b{color:var(--green)}
+.empty{text-align:center;color:var(--mute);padding:40px 30px}
+
+/* feed */
+.seg{display:flex;background:#fff;margin:12px 14px 0;border-radius:14px;padding:4px;border:1px solid var(--line)}
+.seg button{flex:1;padding:8px;border-radius:10px;font-weight:700;font-size:13px;color:var(--mute)}
+.seg button.on{background:var(--navy);color:#fff}
+.ba{position:relative;height:230px;overflow:hidden;touch-action:pan-y}
+.ba svg{position:absolute;inset:0;width:100%;height:100%}
+.ba .after{clip-path:inset(0 0 0 50%)}
+.ba .handle{position:absolute;top:0;bottom:0;left:50%;width:3px;background:#fff;box-shadow:0 0 8px rgba(0,0,0,.3)}
+.ba .handle::after{content:"⇆";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--navy);font-weight:900;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.ba .lab{position:absolute;top:10px;font-size:11px;font-weight:800;padding:3px 8px;border-radius:20px;background:rgba(0,0,0,.55);color:#fff}
+.ba .l1{left:10px}.ba .l2{right:10px;background:var(--green)}
+.fmeta{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.fmeta b{font-size:14.5px}.fmeta span{font-size:12px;color:var(--mute);display:block}
+.thanks{display:flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;background:var(--bg);border-radius:20px;padding:7px 11px}
+.thanks.on{background:#fde8eb;color:var(--red)}
+
+/* profile */
+.pcard{margin:14px;border-radius:24px;padding:20px;color:#fff;background:radial-gradient(120% 120% at 100% 0%,#2a4aa3 0%,#0D1B42 55%,#070f26 100%);position:relative;overflow:hidden}
+.pcard::after{content:"";position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;border:24px solid rgba(255,255,255,.04)}
+.pcard .who{display:flex;gap:14px;align-items:center}
+.ava{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#f6d27a,#c8962e);display:grid;place-items:center;font-size:26px;font-weight:900;color:var(--navy);border:3px solid rgba(255,255,255,.25)}
+.lvl{font-size:11px;letter-spacing:1.5px;color:#f6d27a;font-weight:800}
+.pname{font-family:"Noto Sans Georgian",sans-serif;font-size:20px;font-weight:800}
+.bar{display:flex;gap:4px;height:14px;margin:16px 0 6px}
+.bar i{flex:1;border-radius:3px;background:rgba(255,255,255,.12)}
+.bar i.on{background:linear-gradient(#f6d27a,#e5a21b)}
+.barl{display:flex;justify-content:space-between;font-size:11.5px;color:#b7c3e0}
+.pstats{display:flex;gap:8px;margin-top:16px}
+.pstats div{flex:1;background:rgba(255,255,255,.07);border-radius:14px;padding:10px;text-align:center}
+.pstats b{font-size:19px;display:block}.pstats span{font-size:10.5px;color:#b7c3e0}
+.ranks{display:flex;gap:8px;overflow-x:auto;padding:0 14px 4px}
+.rank{flex:0 0 108px;background:#fff;border-radius:16px;padding:12px 10px;text-align:center;border:1px solid var(--line)}
+.rank .ic{font-size:26px}
+.rank b{display:block;font-size:12.5px;margin-top:4px}
+.rank span{font-size:10.5px;color:var(--mute)}
+.rank.cur{border:2px solid var(--amber);background:#fffaf0}
+.rank.lock{opacity:.45}
+.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:0 14px}
+.bdg{background:#fff;border-radius:16px;padding:12px 4px;text-align:center;border:1px solid var(--line)}
+.bdg .ic{font-size:24px}
+.bdg span{display:block;font-size:10.5px;font-weight:700;margin-top:3px;line-height:1.25}
+.bdg.lock{filter:grayscale(1);opacity:.4}
+.list{background:#fff;margin:12px 14px;border-radius:18px;border:1px solid var(--line);overflow:hidden}
+.list button{width:100%;display:flex;justify-content:space-between;align-items:center;padding:14px;border-bottom:1px solid var(--line);font-weight:600;font-size:14px;text-align:left}
+.list button:last-child{border:0}
+.list button span{color:var(--mute);font-weight:500;font-size:13px}
+.govbtn{background:var(--navy)!important;color:#fff}
+.govbtn span{color:#b7c3e0!important}
+
+/* gov */
+.govhdr{padding:calc(12px + var(--safe-t)) 14px 12px;background:var(--navy);color:#fff}
+.govhdr .r{display:flex;justify-content:space-between;align-items:center}
+.govhdr h1{font-size:17px;font-weight:800}
+.govhdr .who{font-size:12px;color:#b7c3e0}
+.gkpi{display:flex;gap:8px;margin-top:12px}
+.gkpi div{flex:1;background:rgba(255,255,255,.08);border-radius:12px;padding:8px}
+.gkpi b{display:block;font-size:18px}.gkpi span{font-size:10.5px;color:#b7c3e0}
+.pipe{flex:1;display:flex;gap:10px;overflow-x:auto;padding:12px;scroll-snap-type:x mandatory}
+.col{flex:0 0 82%;max-width:300px;background:#e9edf5;border-radius:18px;padding:10px;display:flex;flex-direction:column;scroll-snap-align:start;overflow:hidden}
+.col h3{font-size:13px;font-weight:800;display:flex;justify-content:space-between;padding:2px 4px 8px}
+.col h3 em{font-style:normal;background:#fff;border-radius:20px;padding:0 8px;font-size:12px}
+.col .cards{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:8px;padding-bottom:6px}
+.gcard{background:#fff;border-radius:14px;padding:10px;text-align:left;width:100%;border-left:4px solid var(--red)}
+.gcard.work{border-left-color:var(--amber)}.gcard.asg{border-left-color:var(--blue)}.gcard.done{border-left-color:var(--green)}
+.gcard .r1{display:flex;gap:9px}
+.gcard .thumb{width:46px;height:46px;flex-basis:46px;border-radius:10px}
+.gcard b{font-size:13px;display:block}
+.gcard span{font-size:11.5px;color:var(--mute);display:block}
+.gcard .tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.tag{font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--bg)}
+.tag.ai{background:#e7efff;color:var(--blue)}
+.tag.late{background:#fde8eb;color:var(--red)}
+
+/* modal */
+.modal{position:absolute;inset:0;z-index:80;background:rgba(7,15,38,.55);display:none;align-items:flex-end}
+.modal.on{display:flex}
+.mbox{background:#fff;width:100%;border-radius:24px 24px 0 0;max-height:90%;overflow-y:auto;padding:8px 16px calc(18px + var(--safe-b));animation:up .25s}
+@keyframes up{from{transform:translateY(40%);opacity:.3}}
+.mbox h3{font-size:18px;font-weight:800;margin:4px 0 2px}
+.mbox .ph{height:180px;border-radius:16px;overflow:hidden;margin:10px 0;background:var(--bg);position:relative}
+.mbox .ph img,.mbox .ph svg{width:100%;height:100%;object-fit:cover;display:block}
+.opt{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}
+.opt button{border:1px solid var(--line);border-radius:12px;padding:8px 11px;font-size:12.5px;font-weight:700;background:#fff}
+.opt button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.lab2{font-size:12px;font-weight:800;color:var(--mute);margin-top:8px;letter-spacing:.3px}
+.closeproof{border:2px dashed #c3cde0;border-radius:16px;height:120px;display:grid;place-items:center;position:relative;overflow:hidden;margin:6px 0;color:var(--mute);font-size:13px;font-weight:600;background:var(--bg)}
+.closeproof img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.mbtns{display:flex;gap:8px;margin-top:12px}
+.err{color:var(--red);font-size:12.5px;font-weight:700;margin-top:6px;min-height:18px}
+
+/* login */
+#login{background:var(--navy);color:#fff}
+.lg{flex:1;display:flex;flex-direction:column;padding:calc(40px + var(--safe-t)) 26px calc(26px + var(--safe-b));position:relative;overflow:hidden}
+.lg .logo{width:190px;color:#fff;--lf:var(--navy);margin:10px 0 18px}
+.lg .wordmark{font-size:46px}
+.lg .wordmark small{font-size:12px;letter-spacing:9px}
+.lg .tagline{font-family:"Noto Sans Georgian",sans-serif;font-size:19px;font-weight:700;margin:26px 0 6px;line-height:1.35}
+.lg .tsub{color:#b7c3e0;font-size:14px}
+.lg .form{margin-top:auto;position:relative;z-index:2}
+.phone{display:flex;background:#fff;border-radius:16px;overflow:hidden;margin-bottom:12px}
+.phone span{padding:15px 12px 15px 16px;color:var(--navy);font-weight:800;border-right:1px solid var(--line)}
+.phone input{flex:1;border:0;outline:0;padding:15px 12px;font-size:17px;font-weight:700;color:var(--navy);letter-spacing:1px;min-width:0}
+.code{display:flex;gap:10px;justify-content:center;margin:6px 0 12px}
+.code input{width:56px;height:62px;border-radius:14px;border:0;text-align:center;font-size:26px;font-weight:800;color:var(--navy);outline:0}
+.lg .small{font-size:12px;color:#8e9cc3;text-align:center;margin-top:12px}
+.lg .btn{background:var(--red)}
+.langs{position:absolute;top:calc(16px + var(--safe-t));right:20px;display:flex;gap:4px;z-index:3}
+.langs button{font-size:12px;font-weight:800;padding:5px 9px;border-radius:10px;color:#b7c3e0}
+.langs button.on{background:rgba(255,255,255,.12);color:#fff}
+.toast{position:absolute;left:50%;top:calc(16px + var(--safe-t));transform:translateX(-50%) translateY(-250%);z-index:99;background:var(--navy);color:#fff;padding:10px 16px;border-radius:14px;font-size:13px;font-weight:700;transition:transform .3s;max-width:90%;text-align:center;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.toast.on{transform:translateX(-50%) translateY(0)}
+
+/* v2 */
+.logofull{width:210px;display:block;margin:4px 0 0}
+.brandchip .lmk{width:44px;display:block}
+.rot{min-height:3.1em}.rw{color:#ff6b7d;font-weight:900}#rotTxt{display:inline}#rotTxt.in{animation:rin .55s ease both}
+@keyframes rin{from{opacity:0;filter:blur(4px)}}
+.legend span{font-weight:800}.legend span span{background:none;padding:0;box-shadow:none;color:inherit}.legend .ln{background:var(--red);color:#fff}.legend .lw{background:var(--amber);color:var(--navy)}.legend .ld{background:var(--green);color:#fff}
+.mapfull{margin-left:auto;width:42px;height:42px;border-radius:14px;background:#fff;display:grid;place-items:center;box-shadow:0 4px 12px rgba(13,27,66,.12);color:var(--navy)}
+.mapfull svg{width:20px;height:20px}
+.sheet.hid{transform:translateY(calc(100% - 112px - var(--safe-b)))}
+.maplibregl-ctrl-attrib{font-size:9px}
+.lm{display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.lm svg{width:30px;height:30px;fill:none;stroke:var(--navy);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 1.2px #fff) drop-shadow(0 0 1.2px #fff) drop-shadow(0 0 2px #fff)}
+.lm span{display:none;font-size:10px;font-weight:800;color:var(--navy);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff;white-space:nowrap;margin-top:1px}
+.z15 .lm span{display:block}.lm.minor{display:none}.z14 .lm.minor{display:flex}
+#mmMap{position:absolute;inset:0}
+.lay{width:240px;margin-bottom:10px;overflow:visible}
+.lay .w{fill:var(--navy);stroke:#fff;stroke-width:4.5;stroke-linejoin:round}
+.lay .s{fill:none;stroke:#fff;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round}
+.lay .bod{transform-origin:30px 165px;animation:bend 1.7s cubic-bezier(.4,0,.2,1) both}
+.lay .lift{transform-origin:120px 92px;animation:lift 1.7s cubic-bezier(.4,0,.2,1) both}
+.lay .arms{transform-origin:40px 66px;animation:arms 1.7s cubic-bezier(.4,0,.2,1) both}
+.lay .gflag{opacity:0;animation:fl .35s 1.2s forwards}
+.lay .puff{opacity:0;transform-box:fill-box;transform-origin:center;animation:puff .6s 1.1s both}
+@keyframes bend{0%{transform:rotate(-7deg)}62%{transform:rotate(4deg)}100%{transform:rotate(0)}}
+@keyframes lift{0%{transform:translate(-8px,-46px) rotate(-12deg)}62%{transform:translate(0,-4px) rotate(0)}70%,100%{transform:none}}
+@keyframes arms{0%{transform:translate(-8px,-46px) rotate(-12deg)}62%{transform:translate(0,-4px)}72%{transform:none}100%{transform:translate(-14px,-10px)}}
+@keyframes fl{to{opacity:1}}
+@keyframes puff{0%{opacity:0;transform:scale(.5)}40%{opacity:1}100%{opacity:0;transform:scale(1.3)}}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="demo-tag" id="demotag">სატესტო ვერსია</div>
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN -->
+<section class="screen on" id="login">
+  <div class="langs"><button class="on" data-l="ka">ქარ</button><button data-l="en">ENG</button></div>
+  <div class="lg">
+    <img class="logofull" src="img/logo-full-w.png" alt="ჩვენთან">
+    <div class="tagline rot"><span class="rw" data-i="rw">ჩვენთან</span> <span id="rotTxt"></span></div>
+    <div class="tsub" data-i="tag">ერთი აგური შენც დადე ქალაქის შენებაში.</div>
+    
+    <div class="form" id="lgPhone">
+      <div class="phone"><span>+995</span><input id="phoneIn" inputmode="numeric" maxlength="14" placeholder="5XX XX XX XX"></div>
+      <button class="btn" id="sendCode" data-i="getcode">კოდის მიღება</button>
+      <div class="small" data-i="lgnote">სატესტო ვერსია · შესვლა მხოლოდ ტელეფონის ნომრით</div>
+    </div>
+    <div class="form" id="lgCode" style="display:none">
+      <div style="text-align:center;font-weight:700;margin-bottom:8px" data-i="entercode">შეიყვანე SMS კოდი</div>
+      <div class="code"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"><input maxlength="1" inputmode="numeric"></div>
+      <div class="small" style="margin:0 0 12px" data-i="democode">კოდი გამოგზავნილია შენს ნომერზე</div>
+      <button class="btn" id="verify" data-i="enter">შესვლა</button>
+    </div>
+  </div>
+</section>
+
+<!-- HOME / MAP -->
+<section class="screen" id="home">
+  <div class="mapwrap" id="mapwrap"></div>
+  <div class="maptop">
+    <div class="brandchip"><img class="lmk" src="img/logo-mark-w.png" alt=""><div class="wordmark">ჩვენთან</div></div>
+    <div class="city"><span data-i="city">ბათუმი</span></div>
+    <button class="mapfull" id="mapFull" aria-label="full map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+  </div>
+  <div class="legend">
+    <span class="ln"><span data-i="lnew">ახალი</span></span>
+    <span class="lw"><span data-i="lwork">მუშავდება</span></span>
+    <span class="ld"><span data-i="ldone">გამოსწორდა</span></span>
+  </div>
+  <div class="sheet min" id="sheet">
+    <div class="grab"></div>
+    <div class="cityWall"><span class="brick-ic" style="width:26px;height:16px;flex:0 0 26px"></span><div><b id="cityBricks">1 248</b><span data-i="citywall">აგური დადეს ბათუმელებმა ამ თვეში</span></div></div>
+    <div class="stats">
+      <div class="stat g"><b id="sDone">0</b><span data-i="sdone">გამოსწორდა ამ თვეში</span></div>
+      <div class="stat a"><b id="sWork">0</b><span data-i="swork">მუშავდება</span></div>
+      <div class="stat r"><b id="sNew">0</b><span data-i="snew">ახალი</span></div>
+    </div>
+    <div class="sec"><span data-i="recentfix">ახლახან გამოსწორდა</span><a data-go="feed" data-i="all">ყველა</a></div>
+    <div id="recentList"></div>
+  </div>
+</section>
+
+<!-- REPORT FLOW -->
+<section class="screen" id="report">
+  <div class="flowhdr">
+    <button class="back" id="flowBack"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <div class="steps" id="stepbar"><i></i><i></i><i></i><i></i></div>
+    <div style="font-size:12px;font-weight:700;color:var(--mute)" id="stepnum">1/4</div>
+  </div>
+  <div class="flowbody" id="flowbody"></div>
+  <div class="cta"><button class="btn" id="flowNext">შემდეგი</button></div>
+  <input type="file" id="fileCam" accept="image/*,video/*" capture="environment" hidden>
+  <input type="file" id="fileLib" accept="image/*,video/*" hidden>
+</section>
+
+<!-- SUCCESS -->
+<section class="screen" id="success">
+  <div class="done">
+    <div id="layBox"></div>
+    <h2 data-i="sent">გაგზავნილია!</h2>
+    <p id="sucDep"></p>
+    <div class="qbox">
+      <div><b id="sucQ">#7</b><span data-i="inqueue">ადგილი რიგში</span></div>
+      <div><b id="sucEta">3 დღე</b><span data-i="eta">სავარაუდო ვადა</span></div>
+    </div>
+    <div class="xp">+1 <span data-i="brick">აგური</span> · +20 XP</div>
+    <button class="btn red" data-go="mine" style="max-width:320px" data-i="track">სტატუსის ნახვა</button>
+    <button class="btn" data-go="home" style="max-width:320px;background:transparent;margin-top:6px" data-i="tomap">რუკაზე დაბრუნება</button>
+  </div>
+</section>
+
+<!-- MY REPORTS -->
+<section class="screen" id="mine">
+  <div class="hdr"><h1 data-i="mytitle">ჩემი განცხადებები</h1><p data-i="mysub">ნახე, რა ეტაპზეა თითოეული</p></div>
+  <div class="flag"></div>
+  <div class="scroll" id="mineList"></div>
+</section>
+
+<!-- FEED -->
+<section class="screen" id="feed">
+  <div class="hdr"><h1 data-i="feedtitle">გამოსწორებული</h1><p data-i="feedsub">ერთად შევცვალეთ ჩვენი ქალაქი</p></div>
+  <div class="flag"></div>
+  <div class="scroll">
+    <div class="seg"><button class="on" data-f="all" data-i="fall">ყველა</button><button data-f="road" data-i="froad">გზები</button><button data-f="light" data-i="flight">განათება</button><button data-f="clean" data-i="fclean">სისუფთავე</button></div>
+    <div id="feedList"></div>
+  </div>
+</section>
+
+<!-- PROFILE -->
+<section class="screen" id="profile">
+  <div class="scroll" style="padding-top:var(--safe-t)">
+    <div class="pcard">
+      <div class="who"><div class="ava" id="ava">გ</div><div><div class="lvl" id="lvlName">დონე 3 · ქალაქის მცველი</div><div class="pname" id="pname">გია</div><div style="font-size:12px;color:#b7c3e0" id="pphone">+995 5XX XX XX XX</div></div></div>
+      <div class="bar" id="xpbar"></div>
+      <div class="barl"><span id="xptxt">340 / 500 XP</span><span id="xpnext">შემდეგი: ქალაქის რაინდი</span></div>
+      <div class="pstats"><div><b id="pRep">0</b><span data-i="preps">განცხადება</span></div><div><b id="pFix">0</b><span data-i="pfix">გამოსწორდა</span></div><div><b id="pThx">0</b><span data-i="pthx">მადლობა</span></div></div>
+    </div>
+    <div class="sec" style="margin:16px 14px 8px"><span data-i="mywall">შენი კედელი</span></div>
+    <div class="mywall"><div id="wall"></div><div class="wlegend"><span><em style="background:var(--navy)"></em><span data-i="wfix">გამოსწორდა</span></span><span><em style="background:#fff4dd;border-color:var(--amber)"></em><span data-i="wopen">მუშავდება</span></span><span><em style="border-style:dashed;border-color:#cfd6e4"></em><span data-i="wnext">შემდეგი აგური</span></span></div></div>
+    <div class="sec" style="margin:16px 14px 8px"><span data-i="levels">დონეები</span></div>
+    <div class="ranks" id="ranks"></div>
+    <div class="sec" style="margin:16px 14px 8px"><span data-i="badges">ჯილდოები</span></div>
+    <div class="badges" id="badges"></div>
+    <div class="list">
+      <button class="govbtn" id="toGov"><b>🏛 <span style="color:#fff!important;font-weight:700" data-i="govmode">სამსახურის რეჟიმი</span></b><span data-i="govdemo">სატესტო →</span></button>
+      <button id="langBtn"><span style="color:var(--ink);font-weight:600" data-i="language">ენა</span><span id="langNow">ქართული</span></button>
+      <button id="resetBtn"><span style="color:var(--ink);font-weight:600" data-i="reset">სატესტო მონაცემების თავიდან დაწყება</span><span>↺</span></button>
+      <button id="logout"><span style="color:var(--red);font-weight:600" data-i="logout">გასვლა</span><span></span></button>
+    </div>
+  </div>
+</section>
+
+<!-- GOV -->
+<section class="screen" id="gov">
+  <div class="govhdr">
+    <div class="r"><div><h1 data-i="govtitle">ბათუმის მერია · პანელი</h1><div class="who" data-i="govwho">ოპერატორი · ყველა სამსახური</div></div><button id="govExit" style="background:rgba(255,255,255,.12);border-radius:12px;padding:7px 11px;font-size:12px;font-weight:700" data-i="exit">გასვლა</button></div>
+    <div class="gkpi"><div><b id="gNew">0</b><span data-i="lnew">ახალი</span></div><div><b id="gLate">0</b><span data-i="late">ვადაგადაცილებული</span></div><div><b id="gAvg">2.4</b><span data-i="avg">საშ. დღე</span></div></div>
+  </div>
+  <div class="pipe" id="pipe"></div>
+</section>
+
+<!-- TABS -->
+<nav class="tabs" id="tabs" style="display:none">
+  <button class="tab on" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg><span data-i="tmap">რუკა</span></button>
+  <button class="tab" data-go="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg><span data-i="tfeed">გამოსწორდა</span></button>
+  <button class="fab" data-go="report" aria-label="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+  <button class="tab" data-go="mine"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h10M9 12h10M9 19h10M4 5h.01M4 12h.01M4 19h.01"/></svg><span data-i="tmine">ჩემი</span></button>
+  <button class="tab" data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-i="tprof">პროფილი</span></button>
+</nav>
+
+<!-- MODAL -->
+<div class="modal" id="modal"><div class="mbox" id="mbox"></div></div>
+</div>
+
+<script>
+/* ---------- i18n ---------- */
+const EN={rw:"With us,",tag:"Lay your brick in building your city.",tagsub:"Snap it, send it, watch it get fixed.",getcode:"Get code",lgnote:"Test version · sign in with your phone number only",entercode:"Enter the SMS code",democode:"We sent a code to your number",enter:"Sign in",city:"Batumi",lnew:"New",lwork:"In progress",ldone:"Fixed",sdone:"fixed this month",swork:"in progress",snew:"new",recentfix:"Recently fixed",all:"All",sent:"Sent!",inqueue:"place in queue",eta:"estimated time",guard:"City Guardian",track:"Track status",tomap:"Back to map",mytitle:"My reports",mysub:"See where each one stands",feedtitle:"Fixed",feedsub:"Together we changed our city",fall:"All",froad:"Roads",flight:"Lighting",fclean:"Cleaning",preps:"reports",pfix:"fixed",pthx:"thanks",levels:"Levels",badges:"Badges",govmode:"Staff mode",govdemo:"demo →",language:"Language",reset:"Reset test data",logout:"Log out",govtitle:"Batumi City Hall · Panel",govwho:"Operator · all departments",exit:"Exit",late:"overdue",avg:"avg. days",tmap:"Map",tfeed:"Fixed",tmine:"Mine",tprof:"Profile",citywall:"bricks laid by Batumi residents this month",brick:"brick",mywall:"Your wall",wfix:"Fixed",wopen:"In progress",wnext:"Next brick"};
+const KA={};document.querySelectorAll('[data-i]').forEach(e=>KA[e.dataset.i]=e.textContent);
+let lang='ka';
+const T=(ka,en)=>lang==='en'?en:ka;
+function applyLang(){document.querySelectorAll('[data-i]').forEach(e=>{const k=e.dataset.i;e.textContent=lang==='en'?(EN[k]||KA[k]):KA[k]});
+  document.querySelectorAll('.langs button').forEach(b=>b.classList.toggle('on',b.dataset.l===lang));
+  document.getElementById('langNow').textContent=lang==='en'?'English':'ქართული';
+  document.getElementById('demotag').textContent=T('სატესტო ვერსია','Test version');
+  document.documentElement.lang=lang;
+  try{rot()}catch(e){}
+  renderAll();}
+
+/* ---------- data ---------- */
+const CATS={
+ road:{ka:'გზის დაზიანება',en:'Road damage',dep:{ka:'გზების სამსახური',en:'Roads Department'},icon:'🛣️',eta:4},
+ light:{ka:'ქუჩის განათება',en:'Street lighting',dep:{ka:'ენერგო სამსახური',en:'Electricity Department'},icon:'💡',eta:2},
+ clean:{ka:'ნაგავი / სისუფთავე',en:'Litter / cleaning',dep:{ka:'დასუფთავების სამსახური',en:'Sanitation Department'},icon:'🗑️',eta:1},
+ water:{ka:'წყალი / კანალიზაცია',en:'Water / sewage',dep:{ka:'წყალმომარაგება',en:'Water Utility'},icon:'💧',eta:3},
+ green:{ka:'გამწვანება / პარკი',en:'Parks / greenery',dep:{ka:'გამწვანების სამსახური',en:'Parks Department'},icon:'🌳',eta:5},
+ other:{ka:'სხვა',en:'Other',dep:{ka:'მერიის ცხელი ხაზი',en:'City Hall hotline'},icon:'📌',eta:5}};
+const KEYS=[['light',/ნათ|შუქ|ბოძ|ლამპ|ბნელ|light|lamp|dark/i],['road',/ორმ|გზ|ასფალტ|ტროტუარ|ხიდ|pothole|road|asphalt|sidewalk/i],['clean',/ნაგ|ურნ|ბინძ|კონტეინ|trash|litter|garbage|bin/i],['water',/წყ|კანალიზ|ჭ|ლუქ|water|sewer|leak|manhole/i],['green',/ხე|პარკ|ბალახ|სკამ|tree|park|bench|grass/i]];
+const PLACES=[
+ {ka:'რუსთაველის გამზირი 22',en:'22 Rustaveli Ave',lat:41.6519,lng:41.6341},
+ {ka:'ბათუმის ბულვარი, ანბანის კოშკთან',en:'Batumi Boulevard, near Alphabet Tower',lat:41.655,lng:41.6378},
+ {ka:'ევროპის მოედანი',en:'Europe Square',lat:41.6508,lng:41.6362},
+ {ka:'გორგილაძის ქუჩა 41',en:'41 Gorgiladze St',lat:41.6455,lng:41.6395},
+ {ka:'ჭავჭავაძის ქუჩა 15',en:'15 Chavchavadze St',lat:41.644,lng:41.6345},
+ {ka:'ნოდარ დუმბაძის ქუჩა 8',en:'8 Dumbadze St',lat:41.65,lng:41.6395},
+ {ka:'6 მაისის პარკი',en:'6 May Park',lat:41.647,lng:41.6285},
+ {ka:'პიაცა',en:'Piazza',lat:41.6494,lng:41.6413},
+ {ka:'ფარნავაზ მეფის ქუჩა 60',en:'60 King Parnavaz St',lat:41.643,lng:41.641},
+ {ka:'ზ. გამსახურდიას ქუჩა 3',en:'3 Gamsakhurdia St',lat:41.6525,lng:41.639}];
+const PL=r=>typeof r.place==="number"?PLACES[r.place]:r.place;
+const STAGES=[{ka:'გაგზავნილი',en:'Sent'},{ka:'AI-მ დაახარისხა',en:'Sorted by AI'},{ka:'სამსახურს გადაეცა',en:'Assigned to department'},{ka:'მუშავდება',en:'Work in progress'},{ka:'გამოსწორდა',en:'Fixed'}];
+const NAMES=['ნინო ბ.','ლევან კ.','თამარ ჯ.','გიორგი მ.','ანა ს.','დათო ხ.','მარიამ ტ.'];
+const CREWS=[{ka:'ბრიგადა №3 · გზები',en:'Crew 3 · Roads'},{ka:'ბრიგადა №1 · ენერგო',en:'Crew 1 · Power'},{ka:'ბრიგადა №5 · დასუფთავება',en:'Crew 5 · Cleaning'},{ka:'ბრიგადა №2 · წყალი',en:'Crew 2 · Water'}];
+
+function seed(){
+ const now=Date.now(),d=864e5,r=[];
+ const mk=(id,cat,pl,stage,ago,txt,mine,fixAgo,thx)=>r.push({id,cat,place:pl,stage,ts:now-ago*d,txt,mine:!!mine,by:NAMES[id%NAMES.length],fixedTs:fixAgo!=null?now-fixAgo*d:null,thanks:thx||0,crew:stage>=2?CREWS[['road','light','clean','water'].indexOf(cat)%4||0]:null,fixNote:stage===4?{ka:'დაზიანება აღმოიფხვრა, ადგილი დასუფთავდა.',en:'Repaired and the area cleaned up.'}:null});
+ mk(1,'road',0,4,6,{ka:'ღრმა ორმო გადასასვლელთან',en:'Deep pothole at the crossing'},0,1,48);
+ mk(2,'light',1,4,4,{ka:'ბულვარზე 3 ბოძი არ ანათებს',en:'3 boulevard lamps are out'},0,.5,112);
+ mk(3,'clean',2,4,3,{ka:'გადავსებული ურნები',en:'Overflowing bins'},0,2,31);
+ mk(4,'road',3,4,9,{ka:'ჩავარდნილი ტროტუარი',en:'Sunken sidewalk'},1,3,22);
+ mk(5,'water',4,3,2,{ka:'ლუქი ღიაა',en:'Open manhole'},0);
+ mk(6,'light',5,2,1.5,{ka:'ქუჩა სულ ბნელია',en:'Street is completely dark'},1);
+ mk(7,'green',6,3,5,{ka:'გატეხილი სკამები პარკში',en:'Broken benches in the park'},0);
+ mk(8,'clean',7,1,.3,{ka:'ნაგავი ტროტუარზე',en:'Trash on the sidewalk'},0);
+ mk(9,'road',8,0,.1,{ka:'ორმო გზის შუაში',en:'Pothole in the middle of the road'},0);
+ mk(10,'water',9,0,.2,{ka:'წყალი გამოდის ასფალტიდან',en:'Water leaking through the asphalt'},0);
+ return {reports:r,user:{name:'',phone:'',xp:340,thanked:[]},next:11,gov:false};
+}
+let S;
+try{S=JSON.parse(localStorage.getItem('chventan-v1'))}catch(e){}
+if(!S||!S.reports)S=seed();
+const save=()=>{try{localStorage.setItem('chventan-v1',JSON.stringify(S))}catch(e){}};
+const photos={}; // id -> dataURL (session only)
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const L=o=>o?(lang==='en'?o.en:o.ka):'';
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
+function ago(ts){const h=(Date.now()-ts)/36e5;if(h<1)return T('ახლახან','just now');if(h<24)return Math.round(h)+T(' სთ წინ','h ago');return Math.round(h/24)+T(' დღის წინ',' days ago')}
+const stCls=s=>s>=4?'done':s===3?'work':s===2?'asg':'new';
+const stLabel=s=>s>=4?T('გამოსწორდა','Fixed'):s===3?T('მუშავდება','In progress'):s===2?T('გადაცემულია','Assigned'):T('ახალი','New');
+function queuePos(r){const same=S.reports.filter(x=>x.cat===r.cat&&x.stage<4&&x.ts<=r.ts);return Math.max(1,same.length)}
+function etaDays(r){const c=CATS[r.cat];return Math.max(1,Math.round(c.eta*(r.stage>=3?.4:r.stage===2?.7:1)+queuePos(r)*.3))}
+function etaTxt(r){const d=etaDays(r);return d+T(d===1?' დღე':' დღე',d===1?' day':' days')}
+
+/* scene illustrations for thumbnails / before-after */
+function scene(cat,fixed){
+ const sky=fixed?'#bfe6f5':'#c9d2de',g='#8c96a8';
+ let body='';
+ if(cat==='road'){body=`<rect y="120" width="300" height="80" fill="${fixed?'#3d4552':'#5a616d'}"/><path d="M0 160h300" stroke="#fff" stroke-width="4" stroke-dasharray="22 16" opacity=".8"/>`+(fixed?'':`<ellipse cx="150" cy="160" rx="48" ry="14" fill="#2a2f38"/><ellipse cx="150" cy="158" rx="36" ry="8" fill="#7b8794" opacity=".6"/><path d="M95 150l18 6M190 168l20 4" stroke="#2a2f38" stroke-width="3"/>`)}
+ else if(cat==='light'){body=`<rect y="150" width="300" height="50" fill="#6b7280"/><path d="M150 150V50h40" stroke="#334155" stroke-width="6" fill="none"/><rect x="180" y="46" width="26" height="10" rx="3" fill="#334155"/>`+(fixed?`<path d="M168 56 L130 150 H260 L218 56z" fill="#fde68a" opacity=".55"/><circle cx="193" cy="58" r="6" fill="#fde047"/>`:`<circle cx="193" cy="58" r="5" fill="#1f2937"/>`)}
+ else if(cat==='clean'){body=`<rect y="150" width="300" height="50" fill="#9ca3af"/><rect x="120" y="95" width="60" height="58" rx="5" fill="#15803d"/><rect x="115" y="88" width="70" height="10" rx="3" fill="#166534"/>`+(fixed?'':`<circle cx="105" cy="158" r="12" fill="#57534e"/><circle cx="200" cy="160" r="10" fill="#78716c"/><rect x="215" y="150" width="22" height="14" fill="#a8a29e" transform="rotate(15 226 157)"/><circle cx="150" cy="86" r="16" fill="#57534e"/><circle cx="132" cy="84" r="10" fill="#78716c"/>`)}
+ else if(cat==='water'){body=`<rect y="130" width="300" height="70" fill="#4b5563"/><ellipse cx="150" cy="165" rx="40" ry="11" fill="${fixed?'#374151':'#111827'}" stroke="#9ca3af" stroke-width="3"/>`+(fixed?`<path d="M118 165h64M150 155v20" stroke="#9ca3af" stroke-width="3"/>`:`<path d="M60 175q30-8 60 0t60 0t60 0" stroke="#7dd3fc" stroke-width="4" fill="none"/>`)}
+ else {body=`<rect y="140" width="300" height="60" fill="#86efac"/><circle cx="70" cy="95" r="34" fill="#22c55e"/><rect x="65" y="110" width="10" height="35" fill="#78350f"/><rect x="150" y="128" width="90" height="8" rx="3" fill="#92400e"/>`+(fixed?`<rect x="155" y="136" width="6" height="16" fill="#78350f"/><rect x="228" y="136" width="6" height="16" fill="#78350f"/><rect x="150" y="112" width="90" height="7" rx="3" fill="#92400e"/>`:`<rect x="155" y="136" width="6" height="16" fill="#78350f" transform="rotate(25 158 144)"/><path d="M196 128l-12 -16" stroke="#92400e" stroke-width="7"/>`)}
+ return `<svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice"><rect width="300" height="200" fill="${sky}"/><path d="M0 120 L40 95 L70 110 L110 80 L150 105 L200 85 L240 100 L300 90 V200 H0z" fill="${g}" opacity=".35"/>${body}</svg>`}
+function photoHTML(r,fixed){const k=fixed?r.id+'f':r.id;return photos[k]?`<img src="${photos[k]}">`:scene(r.cat,fixed)}
+
+
+/* ---------- real Batumi map (MapLibre + OpenFreeMap) ---------- */
+const MAPSTYLE='https://tiles.openfreemap.org/styles/positron';
+const ICON={
+alphabet:'<circle cx="12" cy="3.6" r="1.9"/><path d="M9.5 6.5v14M14.5 6.5v14M9.5 8l5 3M14.5 8l-5 3M9.5 12l5 3M14.5 12l-5 3M9.5 16l5 3M14.5 16l-5 3M8 21h8"/>',
+sheraton:'<path d="M9 21V7a3 3 0 0 1 6 0v14M8 21h8M12 2v2M10.5 9h3M10.5 12h3M10.5 15h3M10.5 18h3"/>',
+alinino:'<circle cx="8" cy="5.5" r="2"/><circle cx="16" cy="5.5" r="2"/><path d="M8 9v12M16 9v12M8 13c2-2.5 6-2.5 8 0M6 21h4M14 21h4"/>',
+lighthouse:'<path d="M9 21l1.5-13h3L15 21zM10 8h4l-.6-3h-2.8zM12 2.5v2.5M6.5 5.5l2 .8M17.5 5.5l-2 .8M10 14h4M7 21h10"/>',
+chacha:'<path d="M9 21V9h6v12M8 9h8M9 9l3-5 3 5M11 21v-3h2v3"/><circle cx="12" cy="13" r="2"/>',
+piazza:'<path d="M3.5 21v-9h17v9M3.5 12l2-2h13l2 2M6.5 21v-4.5a1.5 1.5 0 0 1 3 0V21M14.5 21v-4.5a1.5 1.5 0 0 1 3 0V21M10 10V5h4v5M12 3v2"/>',
+medea:'<circle cx="12" cy="4" r="1.6"/><path d="M12 5.6V9M12 7l3.5-2.5M15.5 4.5l1 1.5M9 9h6M10.5 9v10M13.5 9v10M8.5 19h7v2h-7z"/>',
+clock:'<path d="M5 21V9l7-5 7 5v12zM3 21h18M12 11.5v2l1.5 1"/><circle cx="12" cy="13.5" r="3.4"/>',
+neptune:'<path d="M5 15h14M7 15l1.2 6h7.6L17 15M12 15V8M9.5 4l.5 3h4l.5-3M12 4v3M7 12c1.2-1.8 2.8-1.8 4 0M17 12c-1.2-1.8-2.8-1.8-4 0"/>',
+theatre:'<path d="M3 21h18M4 10l8-6 8 6zM6 10v11M10 10v11M14 10v11M18 10v11"/>',
+cathedral:'<path d="M6 21V9l2-4.5L10 9v12M14 21V9l2-4.5L18 9v12M10 21v-6h4v6M10 13h4M8 2.5v2M16 2.5v2M4 21h16"/>',
+mosque:'<path d="M3.5 21v-6a6 6 0 0 1 12 0v6M9.5 9V6.5M18 21V7l1-2.5L20 7v14M2.5 21h19M7.5 21v-3a2 2 0 0 1 4 0v3"/>',
+dolphin:'<path d="M3 15c3-6 10-8 15-6l3-3-1 4.2c1 1 1 2.8 0 3.8-3-1-6 0-8 2l-1-3c-3 1-5 2-8 2zM3 19.5c2 1 4 1 6 0s4-1 6 0 4 1 6 0"/>',
+park:'<circle cx="12" cy="9" r="5.5"/><path d="M12 14.5V21M8 21h8M12 17l-2.2-2M12 16l2-2"/>',
+fountain:'<path d="M4 21h16M6.5 21c0-6 1.8-10 3-14M12 21V3.5M17.5 21c0-6-1.8-10-3-14M9.8 4l2.2-2 2.2 2"/>',
+arena:'<ellipse cx="12" cy="11" rx="9" ry="4.5"/><ellipse cx="12" cy="11" rx="4.5" ry="2"/><path d="M3 11v4c0 2.8 4 5 9 5s9-2.2 9-5v-4"/>',
+cable:'<path d="M2 6l20-3M12 4.5v3.5M7 8h10a1 1 0 0 1 1 1v8a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1zM6 12.5h12M12 8v4.5"/>',
+psh:'<path d="M2.5 11c0-3 2.4-5 5.5-5s5.5 2 5.5 5zM10.5 8c0-3 2.5-5 5.5-5s5.5 2 5.5 5zM8 11v10M16 8v13M2 21h20"/>',
+botanic:'<path d="M5 19C5 10 11 4 20 4c0 9-6 15-15 15zM5 19l9-9M9 15h4M12 12V8"/>',
+port:'<circle cx="12" cy="4.8" r="2"/><path d="M12 6.8V21M8 10.5h8M4 14c0 4 3.6 7 8 7s8-3 8-7M4 14l-1.2 2M20 14l1.2 2"/>'};
+const LM=[
+ {k:'alphabet',ka:'ანბანის კოშკი',en:'Alphabet Tower',lat:41.65596,lng:41.63935},
+ {k:'sheraton',ka:'შერატონი',en:'Sheraton',lat:41.65093,lng:41.63032},
+ {k:'alinino',ka:'ალი და ნინო',en:'Ali and Nino',lat:41.6553,lng:41.6399,minor:1},
+ {k:'lighthouse',ka:'შუქურა',en:'Lighthouse',lat:41.6559,lng:41.64107,minor:1},
+ {k:'chacha',ka:'ჭაჭის კოშკი',en:'Chacha Tower',lat:41.6535,lng:41.6411,minor:1},
+ {k:'piazza',ka:'პიაცა',en:'Piazza',lat:41.64959,lng:41.6411},
+ {k:'medea',ka:'ევროპის მოედანი',en:'Europe Square',lat:41.65122,lng:41.63648},
+ {k:'clock',ka:'ასტრონომიული საათი',en:'Astronomical Clock',lat:41.65117,lng:41.63751,minor:1},
+ {k:'neptune',ka:'ნეპტუნის შადრევანი',en:'Neptune Fountain',lat:41.65239,lng:41.63725,minor:1},
+ {k:'theatre',ka:'დრამატული თეატრი',en:'Drama Theatre',lat:41.65282,lng:41.63828,minor:1},
+ {k:'cathedral',ka:'საკათედრო ტაძარი',en:'Cathedral',lat:41.64629,lng:41.63858},
+ {k:'mosque',ka:'ორთა ჯამე',en:'Orta Jame Mosque',lat:41.64875,lng:41.64375},
+ {k:'dolphin',ka:'დელფინარიუმი',en:'Dolphinarium',lat:41.6477,lng:41.62352},
+ {k:'park',ka:'6 მაისის პარკი',en:'6 May Park',lat:41.64774,lng:41.62919},
+ {k:'fountain',ka:'მოცეკვავე შადრევნები',en:'Dancing Fountains',lat:41.64146,lng:41.61336},
+ {k:'arena',ka:'აჭარაბეთ არენა',en:'Adjarabet Arena',lat:41.63518,lng:41.61918},
+ {k:'cable',ka:'საბაგირო „არგო“',en:'Argo Cable Car',lat:41.63663,lng:41.65091},
+ {k:'psh',ka:'იუსტიციის სახლი',en:'Public Service Hall',lat:41.65875,lng:41.67774},
+ {k:'botanic',ka:'ბოტანიკური ბაღი',en:'Botanical Garden',lat:41.69201,lng:41.70733},
+ {k:'port',ka:'საზღვაო ნავსადგური',en:'Sea Port',lat:41.65213,lng:41.64378}];
+const mapOpts=(el,center,zoom)=>({container:el,style:MAPSTYLE,center,zoom,minZoom:11,maxZoom:18.5,pitch:0,maxPitch:0,dragRotate:false,pitchWithRotate:false,touchPitch:false,attributionControl:{compact:true},maxBounds:[[41.45,41.52],[41.90,41.80]]});
+function flat(m){m.touchZoomRotate.disableRotation();if(m.keyboard&&m.keyboard.disableRotation)m.keyboard.disableRotation()}
+function styleMap(m){if(!m||!m.isStyleLoaded())return;m.getStyle().layers.forEach(l=>{const id=l.id;try{
+ if(l.type==='background')m.setPaintProperty(id,'background-color','#f2f4f8');
+ else if(l.type==='fill'&&/water|ocean|sea/.test(id))m.setPaintProperty(id,'fill-color','#bfe3f0');
+ else if(l.type==='fill'&&/park|wood|grass|forest|landcover|green/.test(id))m.setPaintProperty(id,'fill-color','#d5edda');
+ else if(l.type==='fill'&&/building/.test(id))m.setPaintProperty(id,'fill-color','#e3e7ef');
+ else if(l.type==='line'&&/water|river|stream/.test(id))m.setPaintProperty(id,'line-color','#bfe3f0');
+ else if(l.type==='line'&&/road|highway|street|bridge|tunnel|minor|major|motorway|trunk|primary|secondary|path/.test(id)&&!/casing|outline/.test(id))m.setPaintProperty(id,'line-color','#ffffff');
+ else if(l.type==='symbol'){if(/poi|housenum|transit|aeroway/.test(id))m.setLayoutProperty(id,'visibility','none');
+  else if(l.layout&&l.layout['text-field']){m.setLayoutProperty(id,'text-field',['coalesce',['get',lang==='en'?'name:en':'name:ka'],['get','name']]);m.setPaintProperty(id,'text-color','#55617f')}}
+}catch(e){}})}
+const cssv=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function ptsGeo(){return{type:'FeatureCollection',features:S.reports.map(r=>{const p=PL(r);return{type:'Feature',properties:{id:r.id,c:r.stage>=4?cssv('--green'):r.stage>=2?cssv('--amber'):cssv('--red')},geometry:{type:'Point',coordinates:[p.lng,p.lat]}}})}}
+let MAP=null,mapLang=null;
+function initMap(){
+ if(typeof maplibregl==='undefined'){$('#mapwrap').innerHTML='<div style="padding:120px 30px;text-align:center;color:#55617f">'+T('რუკა ვერ ჩაიტვირთა. შეამოწმე ინტერნეტი.','Map could not load. Check your connection.')+'</div>';return}
+ if(MAP){MAP.resize();updMap();return}
+ MAP=new maplibregl.Map(mapOpts('mapwrap',[41.6365,41.6475],14.5));flat(MAP);
+ MAP.on('load',()=>{MAP.resize();styleMap(MAP);mapLang=lang;
+  MAP.addSource('pts',{type:'geojson',data:ptsGeo()});
+  MAP.addLayer({id:'pts',type:'circle',source:'pts',paint:{'circle-radius':['interpolate',['linear'],['zoom'],12,4.5,16,8],'circle-color':['get','c'],'circle-stroke-color':'#fff','circle-stroke-width':2}});
+  MAP.on('click',e=>{const b=[[e.point.x-14,e.point.y-14],[e.point.x+14,e.point.y+14]];const f=MAP.queryRenderedFeatures(b,{layers:['pts']});if(f.length)openDetail(f[0].properties.id)});
+  LM.forEach(l=>{const el=document.createElement('div');el.className='lm'+(l.minor?' minor':'');el.innerHTML=`<svg viewBox="0 0 24 24">${ICON[l.k]}</svg><span>${L(l)}</span>`;l.el=el;new maplibregl.Marker({element:el,anchor:'bottom'}).setLngLat([l.lng,l.lat]).addTo(MAP)});
+  const zc=()=>{const z=MAP.getZoom(),w=$('#mapwrap');w.classList.toggle('z15',z>=15.2);w.classList.toggle('z14',z>=14.4)};zc();MAP.on('zoom',zc);
+ });
+}
+function updMap(){if(!MAP||!MAP.getSource('pts'))return;MAP.getSource('pts').setData(ptsGeo());
+ if(mapLang!==lang){styleMap(MAP);mapLang=lang;LM.forEach(l=>{if(l.el)l.el.querySelector('span').textContent=L(l)})}}
+function renderMap(){initMap()}
+/* report-flow mini map with reverse geocoding */
+let MINI=null,revT=null;
+function nearestLL(c){let best=0,bd=9;PLACES.forEach((q,i)=>{const d=(q.lat-c.lat)**2+(q.lng-c.lng)**2;if(d<bd){bd=d;best=i}});return PLACES[best]}
+function fmtAddr(j){const a=j&&j.address;if(!a)return null;const st=a.road||a.pedestrian||a.footway||a.square||a.neighbourhood||a.suburb;return st?(st+(a.house_number?' '+a.house_number:'')):(j.name||null)}
+function reverse(c){const n=nearestLL(c);if(!F.addr)F.addr={ka:n.ka,en:n.en,lat:c.lat,lng:c.lng};F.addr.lat=c.lat;F.addr.lng=c.lng;
+ const at=$('#addrT');if(at)at.textContent=T('მისამართს ვეძებ…','Finding the address…');
+ clearTimeout(revT);revT=setTimeout(async()=>{let ka=null,en=null;const ms=mapStreet();if(ms){ka=ms.ka;en=ms.en}else try{const q=`https://nominatim.openstreetmap.org/reverse?format=json&lat=${c.lat}&lon=${c.lng}&zoom=18&addressdetails=1`;const [a,b]=await Promise.all([fetch(q+'&accept-language=ka').then(r=>r.json()),fetch(q+'&accept-language=en').then(r=>r.json())]);ka=fmtAddr(a);en=fmtAddr(b)}catch(e){}
+  F.addr={ka:ka||n.ka,en:en||ka||n.en,lat:c.lat,lng:c.lng};const at2=$('#addrT');if(at2)at2.textContent=L(F.addr)},500)}
+function mapStreet(){if(!MINI||!MINI.isStyleLoaded())return null;const p=MINI.project(MINI.getCenter());const ids=MINI.getStyle().layers.filter(l=>/highway-name/.test(l.id)).map(l=>l.id);let best=null,bd=1e9;
+ for(const r of [50,110,180]){MINI.queryRenderedFeatures([[p.x-r,p.y-r],[p.x+r,p.y+r]],{layers:ids}).forEach(x=>{const g=x.geometry;const cs=g.type==='Point'?[g.coordinates]:g.type==='LineString'?g.coordinates:g.type==='MultiLineString'?g.coordinates.flat():[];cs.forEach(c=>{const q=MINI.project(c);const d=(q.x-p.x)**2+(q.y-p.y)**2;if(d<bd&&x.properties.name){bd=d;best=x.properties}})});if(best)break}
+ return best?{ka:best['name:ka']||best.name,en:best['name:en']||best['name:latin']||best.name}:null}
+function makeMini(){if(typeof maplibregl==='undefined'){const n=PLACES[0];F.addr={...n};$('#addrT').textContent=L(n);return}
+ if(MINI){try{MINI.remove()}catch(e){}MINI=null}
+ const c=F.addr?[F.addr.lng,F.addr.lat]:[41.6362,41.6508];
+ MINI=new maplibregl.Map(mapOpts('mmMap',c,16.3));flat(MINI);
+ MINI.on('load',()=>{styleMap(MINI);MINI.once('idle',()=>{const ce=MINI.getCenter();reverse({lat:ce.lat,lng:ce.lng})})});
+ MINI.on('moveend',()=>{const ce=MINI.getCenter();reverse({lat:ce.lat,lng:ce.lng})});
+ reverse({lat:c[1],lng:c[0]})}
+/* success: man lays a Georgia-shaped brick */
+const GEO_PATH="M23.1 23.8L21.3 17.1L17.2 16.1L15.1 12.1L13.9 12.4L12.6 10.4L5.3 8.5L3.2 5.4L0.0 4.1L1.2 0.6L3.0 0.0L8.1 1.5L10.4 0.8L15.5 4.2L17.8 4.0L23.9 7.4L30.3 8.0L36.1 7.0L39.2 8.9L42.7 8.2L47.8 13.1L57.2 16.9L55.8 19.0L56.5 19.8L62.5 19.4L68.0 16.6L71.8 18.5L73.2 16.6L75.6 18.0L77.2 17.8L79.4 20.2L80.0 21.3L82.9 20.9L86.0 22.2L84.6 28.0L89.4 31.4L93.2 31.9L96.3 33.9L94.6 36.8L93.0 36.8L92.5 38.3L94.6 42.4L100.0 45.8L99.6 49.0L97.2 51.2L93.3 48.0L90.1 48.7L87.4 47.9L85.4 46.5L85.4 45.1L79.6 42.8L72.6 47.8L68.1 48.4L63.5 47.6L56.0 49.9L51.7 49.9L50.6 48.1L48.3 48.3L42.0 40.3L38.8 40.4L36.9 43.4L29.4 41.7L27.4 43.5L22.8 41.6L26.5 35.2Z";
+function layAnim(){const G=`<path d="${GEO_PATH}" transform="translate(65 61) scale(1.1)"/>`;return `<svg class="lay" viewBox="0 0 240 170" aria-hidden="true">
+ <defs><clipPath id="gclip">${G}</clipPath></defs>
+ <g class="bod"><circle class="s" cx="30" cy="30" r="13"/><path class="s" d="M6 114C6 82 14 58 34 56c9 0 14 4 18 9"/></g>
+ <g class="arms"><path class="s" d="M44 60C56 48 70 50 80 60"/><path class="s" d="M36 72c12 4 24 2 34-4"/></g>
+ <g class="lift"><g fill="#9fb0d4" transform="translate(0 4)">${G}</g><g fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round">${G}</g>
+  <g class="gflag" clip-path="url(#gclip)"><rect x="116" y="50" width="9" height="70" fill="#D7263D"/><rect x="60" y="80" width="120" height="7" fill="#D7263D"/>
+  <path d="M90 70h8M94 66v8M146 70h8M150 66v8M90 98h8M94 94v8M146 98h8M150 94v8" stroke="#D7263D" stroke-width="2.6"/></g></g>
+ <rect class="w" x="18" y="112" width="204" height="50" rx="6"/><path class="s" d="M18 137h204M70 112v25M120 112v25M170 112v25M44 137v25M95 137v25M145 137v25M196 137v25"/>
+ <g class="puff"><path class="s" d="M58 104l-10-6M54 110h-12M182 104l10-6M186 110h12" style="stroke-width:3.5"/></g>
+</svg>`}
+function renderHome(){
+ renderMap();
+ $('#sDone').textContent=S.reports.filter(r=>r.stage>=4).length+124;
+ $('#cityBricks').textContent=(1240+S.reports.length).toLocaleString('ka-GE');
+ $('#sWork').textContent=S.reports.filter(r=>r.stage>=2&&r.stage<4).length;
+ $('#sNew').textContent=S.reports.filter(r=>r.stage<2).length;
+ const fixed=S.reports.filter(r=>r.stage>=4).sort((a,b)=>b.fixedTs-a.fixedTs);
+ $('#recentList').innerHTML=fixed.map(r=>`<div class="item" onclick="openDetail(${r.id})"><div class="thumb">${photoHTML(r,true)}<div class="check">✓</div></div><div style="flex:1;min-width:0"><div class="t">${L(r.txt)}</div><div class="s">${L(PL(r))} · ${ago(r.fixedTs)}</div></div></div>`).join('');
+}
+
+/* ---------- navigation ---------- */
+const TABBED=['home','feed','mine','profile'];
+function go(id){
+ if(id==='report'){startFlow();}
+ document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
+ $('#tabs').style.display=TABBED.includes(id)?'flex':'none';
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.go===id));
+ if(id==='home')renderHome();if(id==='mine')renderMine();if(id==='feed')renderFeed();if(id==='profile')renderProfile();if(id==='gov')renderGov();
+ save();
+}
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){e.preventDefault();go(g.dataset.go)}});
+$('#sheet').addEventListener('click',e=>{if(e.target.closest('.grab')||e.target===$('#sheet')){const sh=$('#sheet');if(sh.classList.contains('hid')){$('#mapFull').click();return}sh.classList.toggle('min')}});
+let sy=null;$('#sheet').addEventListener('touchstart',e=>sy=e.touches[0].clientY,{passive:true});
+$('#sheet').addEventListener('touchend',e=>{if(sy==null)return;const dy=e.changedTouches[0].clientY-sy;const sh=$('#sheet');if(dy<-30)sh.classList.remove('min');if(dy>30&&sh.scrollTop<=0)sh.classList.add('min');sy=null});
+
+/* ---------- login ---------- */
+document.querySelectorAll('.langs button').forEach(b=>b.onclick=()=>{lang=b.dataset.l;applyLang()});
+$('#phoneIn').addEventListener('input',e=>{let v=e.target.value.replace(/\D/g,'').slice(0,9);e.target.value=v.replace(/(\d{3})(\d{0,2})(\d{0,2})(\d{0,2})/,(m,a,b,c,d)=>[a,b,c,d].filter(Boolean).join(' '))});
+$('#sendCode').onclick=()=>{const v=$('#phoneIn').value.replace(/\D/g,'');if(v.length<9){toast(T('შეიყვანე 9-ნიშნა ნომერი','Enter a 9-digit number'));return}
+ S.user.phone='+995 '+$('#phoneIn').value;$('#lgPhone').style.display='none';$('#lgCode').style.display='block';toast(T('SMS კოდი გაიგზავნა','SMS code sent'));setTimeout(()=>document.querySelector('.code input').focus(),100)};
+document.querySelectorAll('.code input').forEach((inp,i,all)=>{inp.addEventListener('input',()=>{inp.value=inp.value.replace(/\D/g,'');if(inp.value&&all[i+1])all[i+1].focus();if([...all].every(x=>x.value))$('#verify').click()});inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&all[i-1])all[i-1].focus()})});
+$('#verify').onclick=()=>{const c=[...document.querySelectorAll('.code input')].map(x=>x.value).join('');if(c.length<4){toast(T('შეიყვანე 4 ციფრი','Enter 4 digits'));return}
+ if(c!=='3333'){toast(T('კოდი არასწორია','Wrong code'));document.querySelectorAll('.code input').forEach(x=>x.value='');document.querySelector('.code input').focus();return}
+ S.user.logged=true;save();askName()};
+function askName(){if(S.user.name){go('home');return}
+ modal(`<div class="grab"></div><h3>${T('როგორ მოგმართოთ?','What should we call you?')}</h3><div class="sub" style="color:var(--mute);font-size:13px;margin-bottom:10px">${T('სახელი გამოჩნდება შენს პროფილზე','Your name shows on your profile')}</div>
+ <input id="nameIn" style="width:100%;border:1px solid var(--line);border-radius:14px;padding:14px;font-size:16px;outline:none" placeholder="${T('სახელი','Name')}"><div class="mbtns"><button class="btn" id="nameOk">${T('დაწყება','Start')}</button></div>`);
+ $('#nameOk').onclick=()=>{S.user.name=($('#nameIn').value.trim()||T('მოქალაქე','Citizen'));closeModal();go('home');toast(T('კეთილი იყოს შენი მობრძანება!','Welcome!'))}}
+
+/* ---------- report flow ---------- */
+let F;
+function startFlow(){F={step:0,photo:null,isVideo:false,place:null,addr:null,pos:{x:.5,y:.45},txt:'',cat:null,catManual:false,urg:1}; renderFlow()}
+function guessCat(t){for(const [c,re] of KEYS)if(re.test(t))return c;return t.trim().length>3?'other':null}
+function nearestPlace(p){let best=0,bd=9;PLACES.forEach((q,i)=>{const d=(q.x-p.x)**2+(q.y-p.y)**2;if(d<bd){bd=d;best=i}});return best}
+function renderFlow(){
+ const b=$('#flowbody'),n=$('#flowNext');
+ document.querySelectorAll('#stepbar i').forEach((i,k)=>i.classList.toggle('on',k<=F.step));$('#stepnum').textContent=(F.step+1)+'/4';
+ n.className='btn';n.disabled=false;
+ if(F.step===0){
+  b.innerHTML=`<h2>${T('გადაუღე პრობლემას','Take a photo of the problem')}</h2><div class="sub">${T('ფოტო ან მოკლე ვიდეო, რომ სამსახურმა ზუსტად დაინახოს','A photo or a short video so the crew sees exactly what is wrong')}</div>
+  <div class="shot" id="shot">${F.photo?(F.isVideo?`<video src="${F.photo}" muted autoplay loop playsinline></video>`:`<img src="${F.photo}">`)+`<button class="redo" id="redo">${T('თავიდან','Retake')}</button>`:`<div class="cam"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="4"/></svg></div><b>${T('კამერის გახსნა','Open camera')}</b><span style="font-size:12px;color:var(--mute)">${T('დააჭირე აქ','Tap here')}</span>`}</div>
+  <div class="or"><button id="lib">🖼 ${T('გალერეიდან','From gallery')}</button><button id="skipPh">🧪 ${T('სატესტო ფოტო','Sample photo')}</button></div>`;
+  $('#shot').onclick=e=>{if(e.target.id!=='redo'&&F.photo)return;$('#fileCam').click()};
+  $('#lib').onclick=()=>$('#fileLib').click();
+  $('#skipPh').onclick=()=>{F.photo='sample';F.isVideo=false;renderFlow()};
+  if(F.photo==='sample'){$('#shot').innerHTML=scene('road',false)+`<button class="redo" id="redo">${T('თავიდან','Retake')}</button>`}
+  const rd=$('#redo');if(rd)rd.onclick=e=>{e.stopPropagation();$('#fileCam').click()};
+  n.textContent=T('შემდეგი','Next');n.disabled=!F.photo;
+ }else if(F.step===1){
+  b.innerHTML=`<h2>${T('სად არის?','Where is it?')}</h2><div class="sub">${T('გადაატარე რუკა, პინი შუაში დგას','Drag the map under the pin')}</div>
+  <div class="minimap" id="mm"><div id="mmMap"></div><div class="centerpin" id="cp"><b></b></div></div>
+  <div class="addr"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#D7263D" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:0 0 22px"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><div><b id="addrT"></b><span>${T('ბათუმი · მისამართი ავტომატურად დადგინდა','Batumi · address found automatically')}</span></div></div>`;
+  makeMini();
+  n.textContent=T('ადგილი დადასტურება','Confirm location');
+ }else if(F.step===2){
+  b.innerHTML=`<h2>${T('რა მოხდა?','What happened?')}</h2><div class="sub">${T('მოკლედ აღწერე. AI თავად მიხვდება, რომელ სამსახურს გადაეცეს','Describe it briefly. AI will work out which department gets it')}</div>
+  <textarea id="txt" placeholder="${T('მაგ.: ორმოა გადასასვლელთან, მანქანები ეჯახება','e.g. Pothole at the crossing, cars keep hitting it')}">${F.txt}</textarea>
+  <div class="lab2" style="margin-top:12px">${T('რამდენად სასწრაფოა?','How urgent?')}</div>
+  <div class="stars" id="urg"><button data-u="0">${T('დაბალი','Low')}</button><button data-u="1">${T('საშუალო','Medium')}</button><button data-u="2">${T('საშიშია','Dangerous')}</button></div>
+  <div id="aibox"></div>`;
+  const ai=()=>{if(!F.catManual)F.cat=guessCat(F.txt);const c=F.cat&&CATS[F.cat];
+   $('#aibox').innerHTML=c?`<div class="ai"><div class="lbl">✦ ${T('AI დაახარისხა','SORTED BY AI')}</div><div class="cat">${c.icon} ${L(c)}</div><div class="dep">→ ${L(c.dep)}</div>
+   <div class="chips">${Object.keys(CATS).map(k=>`<button data-c="${k}" class="${k===F.cat?'on':''}">${CATS[k].icon} ${L(CATS[k])}</button>`).join('')}</div></div>`:`<div class="hint">✦ ${T('დაწერე რამდენიმე სიტყვა და AI კატეგორიას შემოგთავაზებს','Type a few words and AI will suggest a category')}</div>`;
+   document.querySelectorAll('#aibox [data-c]').forEach(x=>x.onclick=()=>{F.cat=x.dataset.c;F.catManual=true;ai()});
+   n.disabled=!(F.cat&&F.txt.trim().length>2)};
+  $('#txt').oninput=e=>{F.txt=e.target.value;ai()};
+  const ur=()=>document.querySelectorAll('#urg button').forEach(x=>x.classList.toggle('on',+x.dataset.u===F.urg));ur();
+  document.querySelectorAll('#urg button').forEach(x=>x.onclick=()=>{F.urg=+x.dataset.u;ur()});
+  ai();n.textContent=T('შემდეგი','Next');
+ }else{
+  const c=CATS[F.cat];
+  b.innerHTML=`<h2>${T('გადაამოწმე და გააგზავნე','Check and send')}</h2><div class="sub">${T('გაგზავნის შემდეგ სტატუსს რეალურ დროში ნახავ','After sending you can follow the status live')}</div>
+  <div class="review"><div class="ph">${F.photo==='sample'?scene('road',false):F.isVideo?`<video src="${F.photo}" muted autoplay loop playsinline style="width:100%;height:100%;object-fit:cover"></video>`:`<img src="${F.photo}">`}</div><div class="rows">
+  <div class="row"><span>${T('ადგილი','Location')}</span><b>${L(F.addr)}</b></div>
+  <div class="row"><span>${T('კატეგორია','Category')}</span><b>${c.icon} ${L(c)}</b></div>
+  <div class="row"><span>${T('სამსახური','Department')}</span><b>${L(c.dep)}</b></div>
+  <div class="row"><span>${T('აღწერა','Description')}</span><b style="font-weight:600">${F.txt.replace(/</g,'&lt;')}</b></div></div></div>`;
+  n.textContent=T('გაგზავნა','Send report');n.className='btn red';
+ }
+}
+function onFile(e){const f=e.target.files[0];if(!f)return;F.isVideo=f.type.startsWith('video');
+ if(F.isVideo){F.photo=URL.createObjectURL(f);renderFlow();return}
+ const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const m=900,s=Math.min(1,m/Math.max(img.width,img.height));const cv=document.createElement('canvas');cv.width=img.width*s;cv.height=img.height*s;cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);F.photo=cv.toDataURL('image/jpeg',.8);renderFlow()};img.src=rd.result};rd.readAsDataURL(f);e.target.value=''}
+$('#fileCam').onchange=onFile;$('#fileLib').onchange=onFile;
+$('#flowBack').onclick=()=>{if(F.step>0){F.step--;renderFlow()}else go('home')};
+$('#flowNext').onclick=()=>{if(F.step<3){F.step++;renderFlow();$('#flowbody').scrollTop=0;return}
+ const id=S.next++;const r={id,cat:F.cat,place:F.addr||PLACES[0],stage:1,ts:Date.now(),txt:{ka:F.txt,en:F.txt},mine:true,by:S.user.name,thanks:0,urg:F.urg};
+ if(F.photo&&F.photo!=='sample'&&!F.isVideo)photos[id]=F.photo;
+ S.reports.push(r);S.user.xp+=20;save();
+ $('#sucDep').textContent=T('AI-მ გადასცა: ','AI routed it to: ')+L(CATS[r.cat].dep);
+ $('#sucQ').textContent='#'+queuePos(r);$('#sucEta').textContent=etaTxt(r);
+ $('#layBox').innerHTML=layAnim();
+ go('success')};
+
+/* ---------- my reports ---------- */
+const openTl={};
+function tlHTML(r){return STAGES.map((s,i)=>{const cls=i<r.stage||r.stage>=4?'ok':i===r.stage?'cur':'';const when=i===0?ago(r.ts):i===4&&r.fixedTs?ago(r.fixedTs):i<=r.stage?ago(r.ts+(i*(Date.now()-r.ts)/(r.stage+1))):'';
+ const extra=i===2&&r.crew&&i<=r.stage?' · '+L(r.crew):'';return `<div class="st ${cls}"><div class="c">${cls==='ok'?'✓':''}</div><div><b>${L(s)}</b><span>${when}${extra}</span></div></div>`}).join('')}
+function renderMine(){
+ const mine=S.reports.filter(r=>r.mine).sort((a,b)=>b.ts-a.ts);
+ if(!mine.length){$('#mineList').innerHTML=`<div class="empty"><div style="font-size:40px">📷</div><b>${T('ჯერ არაფერი გაგიგზავნია','Nothing sent yet')}</b><p style="margin-top:6px">${T('დააჭირე წითელ ღილაკს და გადაუღე პირველ პრობლემას','Tap the red button and photograph your first problem')}</p></div>`;return}
+ $('#mineList').innerHTML=mine.map(r=>{const c=CATS[r.cat];const open=openTl[r.id]??(r.stage<4);
+  return `<div class="card"><div class="top" onclick="openDetail(${r.id})"><div class="thumb">${photoHTML(r,r.stage>=4)}${r.stage>=4?'<div class="check">✓</div>':''}</div><div style="flex:1;min-width:0"><div style="font-weight:800;font-size:14.5px">${L(r.txt)}</div><div style="font-size:12px;color:var(--mute)">${c.icon} ${L(c.dep)}</div><div style="font-size:12px;color:var(--mute)">${L(PL(r))}</div></div><span class="badge b-${stCls(r.stage)}">${stLabel(r.stage)}</span></div>
+  ${r.stage<4?`<div class="qline"><div><b>#${queuePos(r)}</b><span>${T('ადგილი რიგში','in queue')}</span></div><div><b>~${etaTxt(r)}</b><span>${T('სავარაუდო ვადა','estimated')}</span></div></div>`:`<div class="fixnote"><b>✓ ${T('გამოსწორდა','Fixed')}</b> ${ago(r.fixedTs)} · ${L(r.fixNote)||''}</div>`}
+  ${open?`<div class="tl">${tlHTML(r)}</div>`:''}<button class="expand" onclick="openTl[${r.id}]=${!open};renderMine()">${open?T('დამალვა','Hide timeline'):T('ეტაპების ნახვა','Show timeline')}</button></div>`}).join('');
+}
+
+/* ---------- feed ---------- */
+let feedF='all';
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{feedF=b.dataset.f;document.querySelectorAll('.seg button').forEach(x=>x.classList.toggle('on',x===b));renderFeed()});
+function renderFeed(){
+ const list=S.reports.filter(r=>r.stage>=4&&(feedF==='all'||r.cat===feedF)).sort((a,b)=>b.fixedTs-a.fixedTs);
+ $('#feedList').innerHTML=list.length?list.map(r=>{const c=CATS[r.cat];const th=S.user.thanked.includes(r.id);
+ return `<div class="card"><div class="ba" data-ba><div>${photoHTML(r,false)}</div><div class="after" style="position:absolute;inset:0">${photoHTML(r,true)}</div><div class="handle"></div><span class="lab l1">${T('მანამდე','Before')}</span><span class="lab l2">✓ ${T('შემდეგ','After')}</span></div>
+ <div class="fmeta"><div><b>${L(r.txt)}</b><span>${c.icon} ${L(c.dep)} · ${L(PL(r))}</span><span>${T('გამოსწორდა','Fixed')} ${ago(r.fixedTs)} · ${T('შეატყობინა','reported by')} ${r.by}</span></div>
+ <button class="thanks ${th?'on':''}" onclick="thank(${r.id})">${th?'❤️':'🤍'} ${r.thanks+(th?1:0)}</button></div></div>`}).join(''):`<div class="empty">${T('ამ კატეგორიაში ჯერ არაფერია','Nothing in this category yet')}</div>`;
+ document.querySelectorAll('[data-ba]').forEach(ba=>{const mv=x=>{const r=ba.getBoundingClientRect();let p=Math.min(1,Math.max(0,(x-r.left)/r.width));ba.querySelector('.after').style.clipPath=`inset(0 0 0 ${p*100}%)`;ba.querySelector('.handle').style.left=p*100+'%'};
+  ba.addEventListener('pointerdown',e=>{mv(e.clientX);ba.setPointerCapture(e.pointerId)});ba.addEventListener('pointermove',e=>{if(e.buttons||e.pointerType==='touch')mv(e.clientX)})});
+}
+function thank(id){const i=S.user.thanked.indexOf(id);if(i<0){S.user.thanked.push(id);toast(T('მადლობა გადაეცა სამსახურს 💙','Thanks sent to the crew 💙'))}else S.user.thanked.splice(i,1);save();renderFeed()}
+
+/* ---------- detail modal ---------- */
+function modal(h){$('#mbox').innerHTML=h;$('#modal').classList.add('on')}
+function closeModal(){$('#modal').classList.remove('on')}
+$('#modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+function openDetail(id){const r=S.reports.find(x=>x.id===id);const c=CATS[r.cat];
+ modal(`<div class="grab"></div><span class="badge b-${stCls(r.stage)}">${stLabel(r.stage)}</span><h3 style="margin-top:8px">${L(r.txt)}</h3><div style="font-size:13px;color:var(--mute)">${c.icon} ${L(c.dep)} · ${L(PL(r))}</div>
+ <div class="ph">${photoHTML(r,r.stage>=4)}</div>
+ ${r.stage<4?`<div class="qline" style="padding:0"><div><b>#${queuePos(r)}</b><span>${T('ადგილი რიგში','in queue')}</span></div><div><b>~${etaTxt(r)}</b><span>${T('სავარაუდო ვადა','estimated')}</span></div></div>`:`<div class="fixnote" style="margin:0"><b>✓ ${T('გამოსწორდა','Fixed')}</b> · ${L(r.fixNote)||''}</div>`}
+ <div class="tl" style="padding:14px 0 4px">${tlHTML(r)}</div><div class="mbtns"><button class="btn ghost" onclick="closeModal()">${T('დახურვა','Close')}</button></div>`)}
+
+/* ---------- profile ---------- */
+const RANKS=[{ka:'მეზობელი',en:'Neighbour',ic:'🏠',xp:0},{ka:'აქტიური მოქალაქე',en:'Active citizen',ic:'🌱',xp:100},{ka:'ქალაქის მცველი',en:'City Guardian',ic:'🛡️',xp:250},{ka:'ქალაქის რაინდი',en:'City Knight',ic:'⚔️',xp:500},{ka:'ქალაქის ლეგენდა',en:'City Legend',ic:'👑',xp:1000}];
+const BADGES=[{ka:'პირველი ფოტო',en:'First photo',ic:'📸',ok:u=>mineN()>=1},{ka:'გამოსწორდა',en:'Got it fixed',ic:'✅',ok:()=>S.reports.some(r=>r.mine&&r.stage>=4)},{ka:'ღამის მცველი',en:'Night watch',ic:'🌙',ok:()=>S.reports.some(r=>r.mine&&r.cat==='light')},{ka:'სისუფთავე',en:'Clean streets',ic:'🧹',ok:()=>S.reports.some(r=>r.mine&&r.cat==='clean')},{ka:'5 განცხადება',en:'5 reports',ic:'🏅',ok:()=>mineN()>=5},{ka:'მადლიერი',en:'Grateful',ic:'💙',ok:()=>S.user.thanked.length>=3},{ka:'ზღვის მეგობარი',en:'Sea friend',ic:'🌊',ok:()=>S.reports.some(r=>r.mine&&r.place===1)},{ka:'ლეგენდა',en:'Legend',ic:'👑',ok:()=>S.user.xp>=1000}];
+const mineN=()=>S.reports.filter(r=>r.mine).length;
+function renderWall(){const mine=S.reports.filter(r=>r.mine).sort((a,b)=>a.ts-b.ts);const cells=mine.map(r=>r.stage>=4?'fix':'open');
+ const firstFix=cells.indexOf('fix');if(firstFix>=0)cells[firstFix]='flg';
+ const total=Math.max(15,Math.ceil((cells.length+3)/5)*5);while(cells.length<total)cells.push('ghost');
+ const rows=[];for(let i=0;i<cells.length;i+=5)rows.push(cells.slice(i,i+5));
+ $('#wall').innerHTML=rows.reverse().map((r,k)=>{const odd=(rows.length-1-k)%2;return `<div class="wrow">${odd?'<i class="h ghost" style="visibility:hidden"></i>':''}${r.map(c=>`<i class="${c}"></i>`).join('')}${odd?'':''}</div>`}).join('')}
+function renderProfile(){
+ const xp=S.user.xp;let ri=0;RANKS.forEach((r,i)=>{if(xp>=r.xp)ri=i});const nx=RANKS[ri+1];
+ $('#ava').textContent=(S.user.name||'?')[0];$('#pname').textContent=S.user.name||T('მოქალაქე','Citizen');$('#pphone').textContent=S.user.phone||'';
+ $('#lvlName').textContent=T('დონე ','LEVEL ')+(ri+1)+' · '+L(RANKS[ri]).toUpperCase();
+ const pct=nx?(xp-RANKS[ri].xp)/(nx.xp-RANKS[ri].xp):1;$('#xpbar').innerHTML=Array.from({length:10},(_,i)=>`<i class="${i<Math.round(pct*10)?'on':''}"></i>`).join('');
+ renderWall();
+ $('#xptxt').textContent=xp+(nx?' / '+nx.xp:'')+' XP';$('#xpnext').textContent=nx?T('შემდეგი: ','Next: ')+L(nx):'';
+ $('#pRep').textContent=mineN();$('#pFix').textContent=S.reports.filter(r=>r.mine&&r.stage>=4).length;$('#pThx').textContent=S.reports.filter(r=>r.mine).reduce((a,r)=>a+r.thanks,0);
+ $('#ranks').innerHTML=RANKS.map((r,i)=>`<div class="rank ${i===ri?'cur':i>ri?'lock':''}"><div class="ic">${r.ic}</div><b>${L(r)}</b><span>${r.xp} XP</span></div>`).join('');
+ $('#badges').innerHTML=BADGES.map(b=>`<div class="bdg ${b.ok()?'':'lock'}"><div class="ic">${b.ic}</div><span>${L(b)}</span></div>`).join('');
+}
+$('#langBtn').onclick=()=>{lang=lang==='ka'?'en':'ka';applyLang()};
+$('#resetBtn').onclick=()=>{const u=S.user;S=seed();S.user.name=u.name;S.user.phone=u.phone;S.user.logged=true;save();toast(T('სატესტო მონაცემები განახლდა','Test data reset'));renderProfile()};
+$('#logout').onclick=()=>{S.user.logged=false;save();$('#lgPhone').style.display='block';$('#lgCode').style.display='none';document.querySelectorAll('.code input').forEach(x=>x.value='');go('login')};
+$('#toGov').onclick=()=>go('gov');$('#govExit').onclick=()=>go('profile');
+
+/* ---------- gov pipeline ---------- */
+const COLS=[{st:[0,1],ka:'ახალი',en:'New'},{st:[2],ka:'გადაცემული',en:'Assigned'},{st:[3],ka:'მუშავდება',en:'In progress'},{st:[4],ka:'გამოსწორებული',en:'Fixed'}];
+function renderGov(){
+ const late=S.reports.filter(r=>r.stage<4&&(Date.now()-r.ts)/864e5>CATS[r.cat].eta);
+ $('#gNew').textContent=S.reports.filter(r=>r.stage<2).length;$('#gLate').textContent=late.length;
+ $('#pipe').innerHTML=COLS.map(col=>{const items=S.reports.filter(r=>col.st.includes(r.stage)).sort((a,b)=>(b.urg||0)-(a.urg||0)||a.ts-b.ts);
+  return `<div class="col"><h3>${L(col)} <em>${items.length}</em></h3><div class="cards">${items.map(r=>{const c=CATS[r.cat];const isLate=late.includes(r);
+  return `<button class="gcard ${stCls(r.stage)}" onclick="govOpen(${r.id})"><div class="r1"><div class="thumb">${photoHTML(r,r.stage>=4)}</div><div style="min-width:0"><b>${L(r.txt)}</b><span>${L(PL(r))}</span><span>${ago(r.ts)} · ${r.by}</span></div></div>
+  <div class="tags"><span class="tag ai">✦ ${L(c.dep)}</span>${r.urg===2?`<span class="tag late">⚠ ${T('საშიში','Dangerous')}</span>`:''}${isLate?`<span class="tag late">${T('ვადაგადაცილებული','Overdue')}</span>`:''}${r.crew&&r.stage<4?`<span class="tag">${L(r.crew)}</span>`:''}</div></button>`}).join('')}</div></div>`}).join('');
+}
+let G={};
+function govOpen(id){const r=S.reports.find(x=>x.id===id);const c=CATS[r.cat];G={id,crew:null,proof:null,note:''};
+ let act='';
+ if(r.stage<2){act=`<div class="lab2">${T('სამსახური (AI-ს შეთავაზება)','Department (AI suggestion)')}</div><div class="opt">${Object.keys(CATS).map(k=>`<button class="${k===r.cat?'on':''}" data-dep="${k}">${CATS[k].icon} ${L(CATS[k].dep)}</button>`).join('')}</div>
+ <div class="lab2">${T('ბრიგადა','Crew')}</div><div class="opt" id="crews">${CREWS.map((x,i)=>`<button data-crew="${i}">${L(x)}</button>`).join('')}</div><div class="err" id="gerr"></div>
+ <div class="mbtns"><button class="btn" id="gAct">${T('გადაცემა ბრიგადისთვის','Assign to crew')}</button></div>`}
+ else if(r.stage===2){act=`<div class="mbtns"><button class="btn" id="gAct" style="background:var(--amber)">${T('სამუშაო დაიწყო','Start work')}</button></div>`}
+ else if(r.stage===3){act=`<div class="lab2">${T('დახურვისთვის სავალდებულოა ფოტო და კომენტარი','Closing needs a photo AND a comment')}</div>
+ <div class="closeproof" id="proof">📷 ${T('დაამატე "შემდეგ" ფოტო','Add an "after" photo')}</div><div class="or" style="margin:0 0 8px"><button id="proofSample">🧪 ${T('სატესტო ფოტო','Sample photo')}</button></div>
+ <textarea id="gnote" style="min-height:80px" placeholder="${T('რა გაკეთდა?','What was done?')}"></textarea><div class="err" id="gerr"></div>
+ <div class="mbtns"><button class="btn green" id="gAct">✓ ${T('გამოსწორდა, დახურვა','Mark fixed and close')}</button></div><input type="file" id="proofIn" accept="image/*" capture="environment" hidden>`}
+ else act=`<div class="fixnote" style="margin:8px 0"><b>✓ ${T('დახურულია','Closed')}</b> · ${L(r.fixNote)||''}</div><div class="mbtns"><button class="btn ghost" onclick="closeModal()">${T('დახურვა','Close')}</button></div>`;
+ modal(`<div class="grab"></div><span class="badge b-${stCls(r.stage)}">${stLabel(r.stage)}</span><h3 style="margin-top:8px">${L(r.txt)}</h3><div style="font-size:13px;color:var(--mute)">${L(PL(r))} · ${r.by} · ${ago(r.ts)}</div><div class="ph">${photoHTML(r,r.stage>=4)}</div>${act}`);
+ document.querySelectorAll('[data-dep]').forEach(b=>b.onclick=()=>{r.cat=b.dataset.dep;document.querySelectorAll('[data-dep]').forEach(x=>x.classList.toggle('on',x===b))});
+ document.querySelectorAll('[data-crew]').forEach(b=>b.onclick=()=>{G.crew=+b.dataset.crew;document.querySelectorAll('[data-crew]').forEach(x=>x.classList.toggle('on',x===b))});
+ const pr=$('#proof');if(pr){pr.onclick=()=>$('#proofIn').click();$('#proofIn').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const img=new Image();img.onload=()=>{const s=Math.min(1,900/Math.max(img.width,img.height));const cv=document.createElement('canvas');cv.width=img.width*s;cv.height=img.height*s;cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);G.proof=cv.toDataURL('image/jpeg',.8);pr.innerHTML=`<img src="${G.proof}">`};img.src=rd.result};rd.readAsDataURL(f)};
+  $('#proofSample').onclick=()=>{G.proof='sample';pr.innerHTML=scene(r.cat,true)}}
+ const a=$('#gAct');if(a)a.onclick=()=>{
+  if(r.stage<2){if(G.crew==null){$('#gerr').textContent=T('აირჩიე ბრიგადა','Pick a crew');return}r.crew=CREWS[G.crew];r.stage=2;toast(T('გადაეცა: ','Assigned: ')+L(r.crew))}
+  else if(r.stage===2){r.stage=3;toast(T('სტატუსი: მუშავდება','Status: in progress'))}
+  else if(r.stage===3){const note=$('#gnote').value.trim();if(!G.proof||note.length<3){$('#gerr').textContent=T('დახურვისთვის საჭიროა ორივე: ფოტო და კომენტარი','Both a photo and a comment are required to close');return}
+   r.stage=4;r.fixedTs=Date.now();r.fixNote={ka:note,en:note};if(G.proof!=='sample')photos[r.id+'f']=G.proof;if(r.mine)S.user.xp+=30;toast(T('დახურულია. მოქალაქე მიიღებს შეტყობინებას ✓','Closed. The citizen gets notified ✓'))}
+  save();closeModal();renderGov()};
+}
+
+
+/* ---------- Mtavruli: every Georgian letter the same height ---------- */
+
+/* rotating "ჩვენთან ..." phrases on sign-in */
+const ROT=[['სტუმარი ღვთისაა.','a guest is a gift from God.'],['სხვანაირი მეგობრობაა.','friendship is something else.'],['სტუმარს სხვანაირად ხვდებიან.','guests are welcomed like nowhere else.'],['მეზობელი ნათესავია.','a neighbour is family.'],['სუფრა არასდროს მთავრდება.','the table never ends.'],['ყველა ერთმანეთს იცნობს.','everyone knows everyone.'],['ქალაქს ერთად ვაშენებთ.','we build the city together.']];
+let rotI=0;function rot(){const el=$('#rotTxt');if(!el)return;el.classList.remove('in');void el.offsetWidth;el.textContent=ROT[rotI][lang==='en'?1:0];el.classList.add('in')}
+rot();setInterval(()=>{if($('#login').classList.contains('on')){rotI=(rotI+1)%ROT.length;rot()}},2800);
+$('#mapFull').onclick=e=>{e.stopPropagation();const sh=$('#sheet');const on=!sh.classList.contains('hid');sh.classList.toggle('hid',on);if(on)sh.classList.add('min');$('#mapFull').innerHTML=on?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';setTimeout(()=>MAP&&MAP.resize(),320)};
+const toMt=t=>t.replace(/[\u10D0-\u10FA\u10FD-\u10FF]/g,c=>String.fromCharCode(c.charCodeAt(0)+0xBC0));
+function mtWalk(root){if(!root||!root.isConnected)return;if(root.nodeType===3)root=root.parentNode;if(!root)return;const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;while(n=w.nextNode()){const p=n.parentNode;if(p&&(p.tagName==='TEXTAREA'||p.tagName==='SCRIPT'||p.tagName==='STYLE'))continue;const v=toMt(n.nodeValue);if(v!==n.nodeValue)n.nodeValue=v}
+ root.querySelectorAll&&root.querySelectorAll('[placeholder]').forEach(e=>{const v=toMt(e.placeholder);if(v!==e.placeholder)e.placeholder=v})}
+new MutationObserver(ms=>{for(const m of ms){if(m.type==='characterData')mtWalk(m.target.parentNode||document.body);else m.addedNodes.forEach(x=>x.nodeType===1?mtWalk(x):x.nodeType===3&&mtWalk(x.parentNode))}}).observe(document.body,{subtree:true,childList:true,characterData:true});
+mtWalk(document.body);document.title=toMt(document.title);
+
+/* ---------- boot ---------- */
+function renderAll(){const on=document.querySelector('.screen.on');if(!on)return;const id=on.id;if(id==='home')renderHome();if(id==='mine')renderMine();if(id==='feed')renderFeed();if(id==='profile')renderProfile();if(id==='gov')renderGov();if(id==='report')renderFlow()}
+applyLang();
+if(S.user.logged&&S.user.name)go('home');
+</script>
+</body>
+</html>
